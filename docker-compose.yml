@@ -1,0 +1,29 @@
+# Alinhado a analise.md §11.2 BANCO: PostgreSQL 15+ | Flyway (migrations) | HikariCP (pool na API Spring Boot).
+# Flyway e pool ficam na aplicação; este arquivo sobe só o servidor PostgreSQL para desenvolvimento local.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fastgondulas-postgres
+    restart: unless-stopped
+    ports:
+      # não usa 5142 nem 5143 (pedido explícito)
+      - "${POSTGRES_PUBLISH_PORT:-5435}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fastgondulas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fastgondulas_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-fastgondulas}
+      # UTF-8 padrão do image; modelo §9 usa NUMERIC/TIMESTAMP com precisão elevada — compatível
+      TZ: ${TZ:-America/Sao_Paulo}
+      PGTZ: ${PGTZ:-America/Sao_Paulo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fastgondulas} -d ${POSTGRES_DB:-fastgondulas}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:
