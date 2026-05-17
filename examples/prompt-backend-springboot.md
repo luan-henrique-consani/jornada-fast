@@ -44,6 +44,7 @@ O backend deve ser responsável por:
 - calcular cubagem/volumetria
 - calcular peso total
 - recomendar automaticamente veículos ideais
+- modelar tipos de carroceria e capacidades logísticas
 - calcular ocupação da carga
 - integrar com APIs externas de rotas, distância, mapas, pedágios e eventualmente frete
 - calcular custo logístico final
@@ -56,6 +57,16 @@ Fluxo principal:
 
 `PDF/Excel do comercial -> extração dos itens -> saneamento/normalização -> cálculo volumétrico -> recomendação de veículos -> cálculo de frete -> proposta consolidada`
 
+### Foco atual de negócio
+
+Neste momento, o domínio logístico deve considerar **apenas transporte rodoviário**, com foco inicial em:
+
+- caminhão truque
+- carreta
+
+Não priorize container, operação portuária ou intermodal neste momento.
+Esses pontos podem existir como evolução futura, mas **não devem dirigir a modelagem principal da primeira versão**.
+
 ### Regra importante de operação
 
 O sistema deve recomendar os veículos automaticamente, mas o operador poderá alterar manualmente no frontend.
@@ -66,7 +77,7 @@ Exemplo:
   - 6 carretas
 - operador altera para:
   - 2 carretas
-  - 3 caminhões
+  - 3 caminhões truque
 
 Após a alteração manual:
 
@@ -197,6 +208,15 @@ Você deve analisar profundamente os seguintes riscos e casos:
 - peça pesada e compacta
 - necessidade de combinar volume, peso, comprimento e restrição operacional
 
+Também considere explicitamente:
+
+- destino que não aceita carreta
+- cliente com doca pequena
+- destino urbano com baixa capacidade de manobra
+- carreta economicamente melhor, mas operacionalmente inviável
+- truque mais caro por m³, porém necessário por restrição urbana
+- necessidade de decidir entre menor custo e maior viabilidade operacional
+
 ## 10. Regras de negócio detalhadas esperadas
 
 ### 10.1 Entrada documental
@@ -294,14 +314,124 @@ O sistema deve recomendar automaticamente composição de frota considerando ao 
 
 Veículos suportados inicialmente:
 
-- utilitário
-- caminhão 3/4
-- toco
-- truck
+- caminhão truque
 - carreta
-- bitrem
-- rodotrem
 - outros parametrizáveis
+
+#### 10.5.1 Tipos de carroceria e capacidades iniciais
+
+O backend deve modelar explicitamente os tipos de carroceria como entidades configuráveis do domínio.
+
+Foco inicial obrigatório:
+
+**Caminhão truque**
+- capacidade volumétrica aproximada entre **35 m³ e 40 m³**
+- indicado para entregas urbanas
+- indicado para locais com limitação de manobra
+- indicado para cargas fracionadas
+- pode ter menor custo absoluto em alguns cenários
+- pode ter custo relativo maior por m³ quando mal ocupado
+- pode possuir restrição de peso própria
+- pode possuir restrição de altura
+- pode possuir regra regional por transportadora
+
+**Carreta**
+- capacidade volumétrica aproximada entre **55 m³ e 60 m³**
+- considerar pelo menos:
+  - carreta padrão `12,3 m`
+  - carreta extendida `14 m`
+- indicada para cargas maiores
+- melhor diluição de frete em cargas consolidadas
+- maior custo operacional absoluto
+- maior custo de pedágio em alguns cenários
+- maior restrição urbana
+- maior necessidade de área de manobra
+- pode exigir doca compatível
+
+#### 10.5.2 Regras obrigatórias de elegibilidade logística
+
+Antes de recomendar qualquer veículo, o backend deve validar:
+
+1. se o `volumeTotal` cabe na capacidade operacional do veículo
+2. se o `pesoTotal` cabe no limite operacional do veículo
+3. se a maior peça cabe nas dimensões úteis internas
+4. se o destino aceita carreta
+5. se há restrição urbana para veículo articulado
+6. se há limitação de doca ou pátio
+7. se há restrição de altura
+8. se há restrição regional por transportadora
+9. se a ocupação mínima é economicamente aceitável
+
+Se a elegibilidade falhar, o veículo deve ser descartado do ranking.
+
+#### 10.5.3 Estratégia de recomendação
+
+O motor de recomendação deve executar pelo menos estas etapas:
+
+1. calcular cubagem total
+2. calcular peso total
+3. identificar restrições da rota
+4. identificar restrições urbanas
+5. identificar limitações do destino
+6. filtrar veículos elegíveis
+7. calcular quantidade necessária por tipo de veículo
+8. estimar frete e pedágio
+9. ranquear cenários
+10. recomendar:
+   - menor custo
+   - menor quantidade de veículos
+   - melhor aproveitamento volumétrico
+   - melhor viabilidade operacional
+
+#### 10.5.4 Exemplos que a análise deve cobrir
+
+- carga `38 m³` com destino urbano apertado:
+  - tendência de recomendação: **1 caminhão truque**
+- carga `58 m³` sem restrição de acesso:
+  - tendência de recomendação: **1 carreta**
+- carga `120 m³` em rota rodoviária convencional:
+  - tendência de recomendação: **2 carretas**
+
+#### 10.5.5 Estrutura mínima de modelagem de veículo
+
+A análise deve propor algo próximo de:
+
+```java
+public class VehicleType {
+    private UUID id;
+    private String nome;
+    private String categoria;
+    private BigDecimal comprimento;
+    private BigDecimal largura;
+    private BigDecimal altura;
+    private BigDecimal capacidadeM3;
+    private BigDecimal pesoMaximo;
+    private Integer quantidadeEixos;
+    private BigDecimal custoKm;
+    private BigDecimal pedagioPorEixo;
+    private Boolean permiteAreaUrbana;
+    private Boolean permiteCargaFracionada;
+    private Boolean ativo;
+}
+```
+
+E também deve sugerir evolução para campos como:
+
+- `capacidade_m3_nominal`
+- `capacidade_m3_operacional`
+- `peso_maximo_nominal_kg`
+- `peso_maximo_operacional_kg`
+- `comprimento_interno_m`
+- `largura_interna_m`
+- `altura_interna_m`
+- `altura_total_veiculo_m`
+- `restricao_urbana`
+- `restricao_altura`
+- `restricao_peso_por_eixo`
+- `requer_doca`
+- `permite_multi_entrega`
+- `fator_ocupacao_padrao`
+- `tipo_carroceria`
 
 ### 10.6 Alteração manual da composição
 
@@ -356,6 +486,8 @@ Defina requisitos funcionais completos para, no mínimo:
 - consultar histórico
 - cadastrar veículos
 - cadastrar capacidades dos veículos
+- cadastrar tipos de carroceria
+- cadastrar restrições de acesso por destino
 - cadastrar tabelas de frete
 - cadastrar restrições por região
 - cadastrar múltiplas transportadoras
@@ -466,6 +598,7 @@ Sugira tabelas para, no mínimo:
 - simulacao_veiculo
 - veiculo_tipo
 - veiculo_capacidade
+- veiculo_regra_operacional
 - transportadora
 - transportadora_regiao
 - tabela_frete
@@ -501,6 +634,7 @@ Inclua exemplos para:
 - `SimulacaoLogistica`
 - `SimulacaoVeiculo`
 - `VeiculoTipo`
+- `VeiculoRegraOperacional`
 - `TabelaFrete`
 - `Transportadora`
 - `RestricaoRegiao`
@@ -514,6 +648,8 @@ Sugira DTOs de request/response para:
 - confirmação de normalização
 - cálculo logístico
 - override manual de veículos
+- recomendação automática de veículos
+- elegibilidade de veículo por rota/destino
 - retorno da proposta consolidada
 - consulta de histórico
 - consulta de simulação
@@ -528,6 +664,7 @@ Sugira endpoints REST versionados para:
 - propostas
 - simulações logísticas
 - veículos
+- elegibilidade logística
 - transportadoras
 - tabelas de frete
 - restrições
@@ -611,6 +748,7 @@ Detalhe como implementar:
 - percentual de volume ocupado
 - percentual de peso ocupado
 - restrição por dimensão crítica
+- diferença entre capacidade nominal e capacidade operacional
 
 ### 22.3 Recomendação de veículos
 
@@ -621,6 +759,10 @@ Explique estratégias como:
 - heurística por custo mínimo
 - heurística por ocupação ótima
 - combinação híbrida peso x volume x comprimento
+- validação de elegibilidade antes do ranking
+- penalização para carreta inviável por restrição urbana
+- penalização para baixa ocupação de carreta
+- preferência por truque quando houver restrição de acesso
 - regras de penalização por subutilização
 - regras de penalização por excesso de fracionamento
 
@@ -639,6 +781,9 @@ Sugira como armazenar regras e fórmulas para customização futura, por exemplo
 - regra por região
 - regra por transportadora
 - regra por tipo de carga
+- regra por tipo de carroceria
+- regra por destino
+- regra por limitação de doca
 
 Não quero solução overengineered.
 Quero algo que comece simples, mas evolua bem.
@@ -656,6 +801,8 @@ Explique como modelar:
 - lead time
 - SLA
 - restrições por praça/região
+- aceitação ou não de carreta por destino
+- uso preferencial de truque em áreas urbanas
 
 ## 25. Performance e escalabilidade
 
@@ -676,6 +823,7 @@ Quero estratégia para:
 
 - saber qual arquivo originou cada item
 - saber qual usuário alterou veículos
+- saber por que uma carreta foi descartada da recomendação
 - saber qual versão da proposta foi enviada ao cliente
 - saber quais parâmetros estavam vigentes no momento do cálculo
 - reproduzir cálculo antigo
@@ -762,6 +910,7 @@ Sua resposta deve ser organizada exatamente nesta ordem:
 - Não simplifique demais a logística.
 - Não ignore divergência entre PDF e Excel.
 - Não ignore volume, peso e dimensão crítica.
+- Não ignore restrição de carroceria, doca, manobra e acesso urbano.
 - Não ignore regra operacional regional.
 - Não ignore auditoria.
 - Não ignore versionamento.

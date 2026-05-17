@@ -16,7 +16,7 @@ A **Fast Gôndulas Ind. Com. Ltda.** (CNPJ 12.345.678/0001-90) é uma indústria
 1. **Linha Seca (LSG — Linha de Gôndolas):** Gôndolas, bases, colunas, painéis, prateleiras, checkouts, mobílias de caixa (checkstands), rack slim e porta-pallets para área seca de supermercados.
 2. **Linha Refrigerada/Fria (SK e RFG):** Expositores refrigerados, ilhas de congelamento, expositores verticais (NLIM/LIM), expositores de vidro curvo/reto, ilhas promotoras abertas, Dry Aged, Self Checkouts — toda a linha de frio para supermercados.
 
-A empresa opera como **fabricante-vendedor**: recebe pedidos de clientes (ex.: Supermercados Bom Preço), emite Ordens de Compra, calcula cubagem/volumetria para logística, estima o frete por modal (caminhão ou container), e despacha com agendamento obrigatório.
+A empresa opera como **fabricante-vendedor**: recebe pedidos de clientes (ex.: Supermercados Bom Preço), emite Ordens de Compra, calcula cubagem/volumetria para logística, estima o frete rodoviário, e despacha com agendamento obrigatório.
 
 ### Como os arquivos se conectam
 
@@ -53,7 +53,7 @@ APLICAÇÃO DO FATOR DE AJUSTE POR CATEGORIA (1.4 LSG / 1.2 MOB / 1.0 CHK / etc.
     ↓
 CÁLCULO DO VOLUME TOTAL (m³) = soma de todos os totais ajustados
     ↓
-CÁLCULO DE METROS DE CARROCERIA (Vol_total × 12 ÷ 60 para caminhão / × 12 ÷ 45 para container)
+CÁLCULO DE METROS DE CARROCERIA (Vol_total × 12 ÷ 60 para caminhão)
     ↓
 PROJEÇÕES COM MARGEM (+10% NViA / +20% Venda)
     ↓
@@ -114,20 +114,16 @@ Mesma estrutura do bloco Gôndolas, compartilha colunas B–F mas nas linhas seg
 **BLOCO PORTA PALLETS — Colunas H a L (linhas 22–39):**  
 Inclui a variável especial `N22` (MONT/DESM.) que controla o fator de volume dos montantes.
 
-**BLOCO SAÍDAS LOGÍSTICAS — Colunas Q a T:**
+**BLOCO SAÍDAS LOGÍSTICAS — Colunas Q e R:**
 
 | Coluna | Linha | Nome | Tipo | Descrição |
 |---|---|---|---|---|
 | Q | 2 | VOLUME TOTAL (M³) | Label | — |
 | R | 2 | Volume Total Caminhão | Decimal calculado | Soma de todos os totais ajustados |
-| T | 2 | Volume Total Container | Decimal calculado | Igual ao caminhão |
 | Q | 3 | MTS DE CARROCERIA | Label | — |
 | R | 3 | Metros de Carroceria (Caminhão) | Decimal calculado | |
-| T | 3 | Metros de Carroceria (Container) | Decimal calculado | |
 | R | 4 | MTS +10% (NVIA) | Decimal calculado | Margem operacional |
-| T | 4 | MTS +10% (NVIA) | Decimal calculado | |
 | R | 5 | MTS +20% (VENDA) | Decimal calculado | Margem comercial |
-| T | 5 | MTS +20% (VENDA) | Decimal calculado | |
 
 ---
 
@@ -312,14 +308,6 @@ BigDecimal volumeTotal = totalAjustadoLSG
 
 ---
 
-**FÓRMULA T2 — Volume Total (Container):**
-```
-=R2
-```
-- Igual ao volume total do caminhão. A diferença está apenas no cálculo de metros de carroceria.
-
----
-
 **FÓRMULA R3 — Metros de Carroceria (Caminhão):**
 ```
 =R2 * 12 / 60
@@ -336,21 +324,6 @@ BigDecimal metrosCaminhao = volumeTotal
     .multiply(BigDecimal.valueOf(12))
     .divide(BigDecimal.valueOf(60), 10, RoundingMode.HALF_UP);
 ```
-
----
-
-**FÓRMULA T3 — Metros de Carroceria (Container):**
-```
-=T2 * 12 / 45
-```
-- **Matemática:** MtsContainer = VolumeTotal × 12 ÷ 45 = VolumeTotal × 0,2667
-- **Interpretação:** Container tem seção transversal menor (45 vs 60), portanto ocupa mais metros lineares por m³ de carga.
-- **Pseudocódigo:**
-```
-metrosCarroceriaContainer = volumeTotal * 12 / 45
-```
-
----
 
 **FÓRMULA R4 — Metros +10% (Caminhão, margem NViA):**
 ```
@@ -373,24 +346,6 @@ BigDecimal metrosCaminhaoNViA = metrosCaminhao.multiply(new BigDecimal("1.10"));
 ```java
 BigDecimal metrosCaminhaoVenda = metrosCaminhao.multiply(new BigDecimal("1.20"));
 ```
-
----
-
-**FÓRMULA T4, T5 — Mesmas margens para Container:**
-```
-T4: =T3 * 110%
-T5: =T3 * 120%
-```
-
----
-
-**FÓRMULA T8 — Valor auxiliar (Container):**
-```
-=T5 / 12
-```
-- Divide os metros de carroceria +20% do container por 12. Pode representar custo por unidade ou segmentação por módulo de 1 metro.
-
----
 
 **CONSTANTES PRÉ-DEFINIDAS (Qtd/m³ por produto):**
 
@@ -614,7 +569,6 @@ QtdPorM3_efetivo = QtdPorM3_base × FatorMontagem  // 1 se montado, 4 se desmont
 
 // LOGÍSTICA
 Mts_carroceria_caminhao = Vol_total × 12 / 60     = Vol_total × 0.20
-Mts_carroceria_container = Vol_total × 12 / 45    = Vol_total × 0.2667
 Mts_+10%(NViA) = Mts_carroceria × 1.10
 Mts_+20%(Venda) = Mts_carroceria × 1.20
 
@@ -665,16 +619,12 @@ FUNCTION calcularVolumetria(pedido, statusMontagem):
 
   // FASE 5: Logística
   mts_caminhao = volume_total * 12 / 60
-  mts_container = volume_total * 12 / 45
   mts_caminhao_nvia = mts_caminhao * 1.10
   mts_caminhao_venda = mts_caminhao * 1.20
-  mts_container_nvia = mts_container * 1.10
-  mts_container_venda = mts_container * 1.20
 
   RETURN VolumetriaResult {
-    volumeTotal, mts_caminhao, mts_container,
+    volumeTotal, mts_caminhao,
     mts_caminhao_nvia, mts_caminhao_venda,
-    mts_container_nvia, mts_container_venda,
     detalhePorCategoria: [...]
   }
 ```
@@ -732,17 +682,11 @@ public class VolumetriaService {
         // Logística
         BigDecimal mtsCaminhao = volumeTotal.multiply(CONST_CAMINHAO_NUMERADOR)
             .divide(CONST_CAMINHAO_DENOMINADOR, 4, RoundingMode.HALF_UP);
-        BigDecimal mtsContainer = volumeTotal.multiply(CONST_CAMINHAO_NUMERADOR)
-            .divide(CONST_CONTAINER_DENOMINADOR, 4, RoundingMode.HALF_UP);
-
         return VolumetriaResultDTO.builder()
             .volumeTotal(volumeTotal)
             .metrosCarroceriaCaminhao(mtsCaminhao)
-            .metrosCarroceriaContainer(mtsContainer)
             .metrosCaminhaoNViA(mtsCaminhao.multiply(MARGEM_NVIA))
             .metrosCaminhaoVenda(mtsCaminhao.multiply(MARGEM_VENDA))
-            .metrosContainerNViA(mtsContainer.multiply(MARGEM_NVIA))
-            .metrosContainerVenda(mtsContainer.multiply(MARGEM_VENDA))
             .detalhePorCategoria(Map.of(
                 "LSG", volLSG, "MOBILIAS", volMob,
                 "RACK_SLIM", volRack, "CHECKOUTS", volChk,
@@ -770,17 +714,14 @@ POST /api/v1/estimativas/volumetria
 Body: EstimativaInputDTO {
   pedidoId: String (opcional),
   statusMontagem: enum [MONTADOS, DESMONTADOS],
-  modal: enum [CAMINHAO, CONTAINER, AMBOS],
+  modal: enum [CAMINHAO],
   itens: [{ codigo: String, quantidade: int }]
 }
 Response: VolumetriaResultDTO {
   volumeTotal: decimal,
   metrosCarroceriaCaminhao: decimal,
-  metrosCarroceriaContainer: decimal,
   metrosCaminhaoNViA: decimal,
   metrosCaminhaoVenda: decimal,
-  metrosContainerNViA: decimal,
-  metrosContainerVenda: decimal,
   detalhePorCategoria: { LSG: decimal, MOBILIAS: decimal, ... },
   itens: [{ codigo, quantidade, qtdPorM3, volume }]
 }
@@ -832,11 +773,8 @@ CREATE TABLE estimativa (
     status_montagem VARCHAR(20) NOT NULL,
     volume_total_m3 NUMERIC(12,4),
     mts_caminhao NUMERIC(10,4),
-    mts_container NUMERIC(10,4),
     mts_caminhao_nvia NUMERIC(10,4),
     mts_caminhao_venda NUMERIC(10,4),
-    mts_container_nvia NUMERIC(10,4),
-    mts_container_venda NUMERIC(10,4),
     criado_por VARCHAR(100),
     criado_em TIMESTAMP DEFAULT NOW()
 );
@@ -870,35 +808,30 @@ O Excel não possui uma seção de frete monetário explícita, mas o modelo log
 | Variável | Valor | Fonte |
 |---|---|---|
 | Seção transversal caminhão | 60 (constante) | Fórmula R3 |
-| Seção transversal container | 45 (constante) | Fórmula T3 |
 | Fator altura referência | 12 | Constante nas fórmulas |
-| Margem NViA (custo real) | +10% | Fórmulas R4/T4 |
-| Margem Venda (preço cliente) | +20% | Fórmulas R5/T5 |
+| Margem NViA (custo real) | +10% | Fórmula R4 |
+| Margem Venda (preço cliente) | +20% | Fórmula R5 |
 | Condição de pagamento (OC) | 28 DDL | PDF |
 
 **Modalidades de transporte:**
 - **Caminhão:** carga completa ou fracionada, medido em metros de carroceria
-- **Container:** marítimo ou rodoviário intermodal, com seção menor (45 vs 60)
 
 **Interpretação das constantes:**
 - A constante `12` provavelmente representa a área da seção transversal interna da carroceria em m² (ex.: 2.4m largura × 5m altura = 12 m²) ou é o fator de conversão entre o volume e o espaço linear
 - A constante `60` para caminhão = referência de capacidade em volume de um caminhão padrão (ex.: comprimento 10m × área 6 m² da seção = 60 m³ total)  
-- A constante `45` para container = capacidade de referência do container (20 pés ≈ 33 m³, 40 pés ≈ 67 m³; o valor 45 pode ser específico ao modelo da empresa)
 
 **Resultado:** `MtsCarroceria = VolumeTotal × 12 / constante_modal`
 
-Simplificando: para o caminhão, cada metro linear de carroceria comporta `60/12 = 5 m³` de carga. Para o container, cada metro linear comporta `45/12 = 3.75 m³`.
+Simplificando: para o caminhão, cada metro linear de carroceria comporta `60/12 = 5 m³` de carga.
 
 ### 4.2 Fórmulas de Frete
 
 ```
 // Conversão volume → metros lineares
 MetrosLinearCaminhao = VolumeTotalM3 / 5.0
-MetrosLinearContainer = VolumeTotalM3 / 3.75
 
 // Equivalente com as constantes originais
 MetrosLinearCaminhao = VolumeTotalM3 × 12 / 60
-MetrosLinearContainer = VolumeTotalM3 × 12 / 45
 
 // Margens
 MetrosFreteCustoNViA = MetrosLinear × 1.10
@@ -911,8 +844,6 @@ MetrosFretePreclienteVenda = MetrosLinear × 1.20
 FUNCTION calcularFrete(volumeTotal, modal, tipoCalculo):
   IF modal == CAMINHAO:
     metrosBase = volumeTotal * 12 / 60
-  ELIF modal == CONTAINER:
-    metrosBase = volumeTotal * 12 / 45
 
   metrosNViA = metrosBase * 1.10     // custo real
   metrosVenda = metrosBase * 1.20   // preço ao cliente
@@ -932,8 +863,7 @@ FUNCTION calcularFrete(volumeTotal, modal, tipoCalculo):
 public class FreteService {
 
     private static final Map<Modal, BigDecimal> CONSTANTES_MODAL = Map.of(
-        Modal.CAMINHAO, new BigDecimal("60"),
-        Modal.CONTAINER, new BigDecimal("45")
+        Modal.CAMINHAO, new BigDecimal("60")
     );
     private static final BigDecimal FATOR_ALTURA = new BigDecimal("12");
 
@@ -954,7 +884,6 @@ public class FreteService {
     public FreteComparativoDTO compararModais(BigDecimal volumeTotalM3) {
         return FreteComparativoDTO.builder()
             .caminhao(calcular(volumeTotalM3, Modal.CAMINHAO))
-            .container(calcular(volumeTotalM3, Modal.CONTAINER))
             .build();
     }
 }
@@ -966,15 +895,14 @@ public class FreteService {
 POST /api/v1/frete/calcular
 Body: {
   volumeTotalM3: decimal,
-  modal: enum [CAMINHAO, CONTAINER, AMBOS]
+  modal: enum [CAMINHAO]
 }
 Response: {
-  caminhao?: { metrosBase, metrosNViA, metrosVenda },
-  container?: { metrosBase, metrosNViA, metrosVenda }
+  caminhao: { metrosBase, metrosNViA, metrosVenda }
 }
 
 GET /api/v1/frete/tabela-modais
-Response: { constanteCaminhao: 60, constanteContainer: 45, fatorAltura: 12 }
+Response: { constanteCaminhao: 60, fatorAltura: 12 }
 
 PUT /api/v1/frete/parametros
 Body: { modal, constante }  // para atualização futura dos parâmetros
@@ -1026,7 +954,7 @@ O sistema deve calcular o volume total consolidado somando todos os totais ajust
 O sistema deve permitir selecionar o status de montagem (MONTADOS ou DESMONTADOS) para os montantes de porta-pallets, alterando automaticamente o Qtd/m³ efetivo (multiplicado por 1 ou 4, respectivamente).
 
 ### RF-008 — Cálculo de Metros de Carroceria
-O sistema deve calcular os metros lineares de carroceria necessários para o transporte, para os modais Caminhão e Container, usando as constantes configuráveis.
+O sistema deve calcular os metros lineares de carroceria necessários para o transporte rodoviário, usando as constantes configuráveis.
 
 ### RF-009 — Projeções com Margens
 O sistema deve calcular e exibir os metros de carroceria com margem +10% (NViA/custo) e +20% (Venda/preço ao cliente).
@@ -1035,7 +963,7 @@ O sistema deve calcular e exibir os metros de carroceria com margem +10% (NViA/c
 O sistema deve manter e permitir atualizar os fatores de ajuste por categoria (LSG=1.4, MOBÍLIAS=1.2, RACK SLIM=1.2, CHECKOUTS=1.0).
 
 ### RF-011 — Gestão de Parâmetros Logísticos
-O sistema deve manter os parâmetros de conversão (constante do caminhão=60, constante do container=45, fator de altura=12) e permitir sua atualização com histórico de vigência.
+O sistema deve manter os parâmetros de conversão do transporte rodoviário (constante do caminhão=60, fator de altura=12) e permitir sua atualização com histórico de vigência.
 
 ### RF-012 — Criação de Estimativas
 O sistema deve permitir criar uma estimativa de volumetria associada a uma Ordem de Compra ou a um cliente, inserindo itens e quantidades.
@@ -1074,7 +1002,7 @@ O sistema deve suportar a geração de configurações de produto (os flags CONF
 Para produtos da linha fria, o sistema deve calcular o volume unitário via dimensões físicas (C × L × A) e o volume total por quantidade.
 
 ### RF-024 — Comparativo de Modalidades
-O sistema deve comparar as necessidades logísticas para Caminhão vs. Container em um único relatório, auxiliando na decisão de modal.
+O sistema deve comparar cenários logísticos rodoviários em um único relatório, auxiliando na decisão entre truque e carreta.
 
 ---
 
@@ -1244,19 +1172,10 @@ public class Estimativa {
     private BigDecimal metrosCaminhao;
     
     @Column(precision = 10, scale = 4)
-    private BigDecimal metrosContainer;
-    
-    @Column(precision = 10, scale = 4)
     private BigDecimal metrosCaminhaoNViA;
     
     @Column(precision = 10, scale = 4)
     private BigDecimal metrosCaminhaoVenda;
-    
-    @Column(precision = 10, scale = 4)
-    private BigDecimal metrosContainerNViA;
-    
-    @Column(precision = 10, scale = 4)
-    private BigDecimal metrosContainerVenda;
     
     private String criadoPor;
     
@@ -1275,7 +1194,7 @@ public class Estimativa {
 - **Builder Pattern:** Para montagem dos DTOs de resultado (VolumetriaResultDTO)
 - **Repository Pattern:** Spring Data JPA para todos os repositórios
 - **Facade Pattern:** VolumetriaService encapsulando os sub-cálculos
-- **Template Method:** Para cálculo de volume por modal (caminhão e container compartilham a mesma estrutura, diferenciando apenas a constante)
+- **Template Method:** Para cálculo de volume e aplicação de regras logísticas rodoviárias por tipo de veículo
 
 ---
 
@@ -1305,7 +1224,7 @@ components/
 │   ├── FormularioEstimativa/         # Entrada de itens + qtds
 │   ├── TabelaItens/                  # Grid editável com volume por item
 │   ├── ResultadoVolumetria/          # Card com volume total e projeções
-│   ├── ComparativoModal/             # Caminhão vs Container side by side
+│   ├── ComparativoVeiculos/          # Truque vs Carreta side by side
 │   └── SeletorMontagem/             # Toggle MONTADOS / DESMONTADOS
 ├── produto/
 │   ├── TabelaProdutos/
@@ -1339,7 +1258,7 @@ components/
 7. Sistema exibe:
    - Volume por categoria (bruto e ajustado)
    - Volume total
-   - Metros de carroceria (caminhão e container)
+   - Metros de carroceria
    - Projeções +10% e +20%
 8. Usuário pode exportar ou salvar
 ```
@@ -1351,7 +1270,7 @@ estimativaAtual: {
   itens: [{ codigo, descricao, quantidade, qtdPorM3, volume }],
   statusMontagem: 'MONTADOS' | 'DESMONTADOS',
   resultado: {
-    volumeTotal, metrosCaminhao, metrosContainer, ...detalhePorCategoria
+    volumeTotal, metrosCaminhao, ...detalhePorCategoria
   },
   loading: boolean,
   errors: {}
@@ -1531,11 +1450,8 @@ CREATE TABLE estimativa (
     volume_porta_pallets_ajustado NUMERIC(12,6),
     volume_total_m3 NUMERIC(12,4),
     mts_caminhao NUMERIC(10,4),
-    mts_container NUMERIC(10,4),
     mts_caminhao_nvia NUMERIC(10,4),
     mts_caminhao_venda NUMERIC(10,4),
-    mts_container_nvia NUMERIC(10,4),
-    mts_container_venda NUMERIC(10,4),
     criado_por VARCHAR(100),
     criado_em TIMESTAMP DEFAULT NOW()
 );
@@ -1589,8 +1505,8 @@ Os valores de Qtd/m³ dos checkouts (ex.: 0.5254988913525499) são muito preciso
 ### R-006 — Coluna PRATELEIRAS 400MM ausente na Estimativa
 A aba Validações contém o produto "PRATELEIRAS 400MM" (Qtd/m³=70) que não existe na aba Estimativa principal. Sugere que a lista de produtos é dinâmica e não fixa. O sistema deve tratá-la como catálogo extensível.
 
-### R-007 — Cálculo de metros de carroceria: interpretação das constantes 60 e 45
-As constantes 60 e 45 parecem representar a capacidade volumétrica de referência de cada modal (m³), não dimensões diretas. Precisam ser validadas com a equipe logística. Se 1 caminhão = 60 m³ e a carroceria tem 12m de comprimento, então a seção transversal é 5 m². Se 1 container = 45 m³ com o mesmo comprimento referência de 12m, a seção seria 3.75 m². Esses valores precisam ser confirmados.
+### R-007 — Cálculo de metros de carroceria: interpretação da constante 60
+A constante 60 parece representar a capacidade volumétrica de referência do modal rodoviário (m³), não uma dimensão direta. Precisa ser validada com a equipe logística. Se 1 caminhão = 60 m³ e a carroceria tem 12m de comprimento, então a seção transversal de referência seria 5 m². Esse valor precisa ser confirmado.
 
 ### R-008 — Linha nova v1 vs v2 sem critério claro de vigência
 O arquivo 07 apresenta duas propostas de nomenclatura nova sem indicar qual é a vigente atual. A aba "PROPOSTA NOVA NUMENCLATURA 2" (com código F01 CA-4 1,00) parece ser mais recente. O sistema deve registrar todas as versões históricas e indicar a versão ativa.
@@ -1725,6 +1641,640 @@ POST   /api/v1/auth/logout
 23. Testes de carga
 24. Otimização de queries
 25. Documentação OpenAPI completa
+
+## 12. TIPOS DE VEÍCULOS E CARROCERIAS
+
+### 12.1 Objetivo da Expansão Logística
+
+O modelo atual do documento identifica corretamente o cálculo de **metros de carroceria** como unidade operacional de contratação de frete rodoviário. Entretanto, para o sistema evoluir para uma plataforma próxima de um **TMS/WMS enterprise**, o domínio logístico precisa sair de uma lógica simplificada de "caminhão genérico" e passar a operar com uma estrutura configurável de:
+
+- tipos de veículos
+- tipos de carroceria
+- capacidades volumétricas e de peso
+- restrições operacionais por rota, região e destino
+- regras comerciais por transportadora
+- custos variáveis por eixo, quilometragem, pedágio e disponibilidade
+
+Em produção, a recomendação de transporte não pode depender apenas de `volumeTotal`. O motor logístico deve considerar simultaneamente:
+
+- cubagem total da carga
+- peso bruto total
+- densidade média
+- quantidade de volumes
+- dimensões máximas por peça
+- necessidade de carga fracionada
+- restrições urbanas
+- restrições de doca
+- restrições de altura
+- restrições de comprimento total do conjunto
+- restrições de trânsito municipal/estadual
+- disponibilidade de transportadora para a rota
+
+Sem essa camada de modelagem, o sistema corre risco de:
+
+- recomendar veículo fisicamente inviável
+- gerar frete subprecificado
+- subestimar pedágio
+- ignorar restrições de acesso
+- comprometer SLA de entrega
+- gerar baixa ocupação volumétrica
+- produzir composição logística antieconômica
+
+### 12.2 Princípios Arquiteturais para o Domínio de Transporte
+
+Para manter escalabilidade nacional e futura expansão rodoviária, a arquitetura deve seguir estes princípios:
+
+1. **Veículo não é constante hardcoded**
+   - capacidades e dimensões devem ser parametrizáveis
+   - o sistema não pode depender de valores fixos dentro de código Java
+
+2. **Carroceria é entidade de negócio**
+   - "truque" e "carreta" precisam existir como entidades configuráveis
+
+3. **Capacidade real deve ser modelada em múltiplos eixos**
+   - capacidade cúbica
+   - peso bruto transportável
+   - limites por eixo
+   - dimensões internas úteis
+   - ocupação operacional recomendada
+
+4. **Regras logísticas devem ser desacopladas do cálculo básico**
+   - cálculo de cubagem
+   - elegibilidade de veículo
+   - ranking de recomendação
+   - cálculo de frete
+   - cálculo de pedágio
+   - checagem de restrições
+   devem ser serviços independentes
+
+5. **Configuração por contexto operacional**
+   - por transportadora
+   - por UF
+   - por cidade
+   - por cliente
+   - por CD/origem
+   - por tipo de operação rodoviária
+
+### 12.3 Tipos de Veículos e Carrocerias
+
+O sistema deve possuir uma estrutura configurável de veículos logísticos para atender cargas secas, entregas urbanas e cargas de maior volume.
+
+#### 12.3.1 Caminhão Truque
+
+**Descrição operacional:**
+
+O caminhão truque (popularmente também tratado em algumas operações como "truck", dependendo da nomenclatura interna da transportadora) é um veículo rígido, com menor comprimento total do que uma carreta articulada, maior flexibilidade de manobra e melhor aderência a operações urbanas e entregas em supermercados com pátios menores.
+
+**Características principais:**
+
+- capacidade volumétrica aproximada:
+  - entre **35 m³ e 40 m³**
+- menor capacidade que carreta
+- maior flexibilidade para entregas urbanas
+- melhor comportamento em locais com limitação de manobra
+- pode ter custo operacional menor em rotas curtas ou urbanas
+- frequentemente mais adequado para carga fracionada
+
+**Quando utilizar:**
+
+- há limitação de espaço no destino
+- supermercados possuem dificuldade de manobra
+- centros urbanos possuem restrições para veículos maiores
+- a carga total não justifica carreta
+- há necessidade de múltiplas entregas fracionadas na mesma rota
+
+**Regras importantes:**
+
+- pode possuir custo por km diferente por transportadora
+- pode possuir limite de peso diferente conforme chassi/configuração
+- pode possuir restrição regional
+- pode possuir restrição de altura
+- ideal para cargas fracionadas e entregas urbanas
+- pode ser preferido mesmo com frete unitário maior, caso reduza risco operacional de acesso
+
+**Riscos reais:**
+
+- baixa ocupação se utilizado para cargas grandes sem consolidação
+- aumento de custo por m³ transportado se a ocupação ficar baixa
+- divergência entre peso permitido e volume disponível dependendo do mix da carga
+
+#### 12.3.2 Carreta
+
+**Descrição operacional:**
+
+A carreta é a principal opção rodoviária para consolidação de maiores volumes, com melhor aproveitamento cúbico e melhor diluição de frete em cargas completas. Em contrapartida, possui maior restrição operacional em áreas urbanas, docas pequenas e destinos com acesso limitado.
+
+**Características principais:**
+
+- capacidade aproximada:
+  - entre **55 m³ e 60 m³** para configurações secas padrão
+- modelos operacionais:
+  - padrão **12,3 m**
+  - extendida **14 m**
+- indicada para:
+  - cargas maiores
+  - melhor aproveitamento de frete
+  - grandes volumes
+- possui custo operacional absoluto maior
+- normalmente possui melhor custo relativo por m³ em cargas consolidadas
+- pode ter maiores restrições urbanas
+- exige áreas maiores para manobra e doca
+
+**Regras adicionais:**
+
+- carretas maiores podem ter:
+  - frete mais caro
+  - maior capacidade
+  - pedágio mais alto
+  - maior restrição de acesso
+- o sistema deve verificar:
+  - se o destino aceita carreta
+  - restrições urbanas
+  - limitação de docas
+  - limitação de acesso
+  - janela de recebimento compatível
+
+**Ponto crítico de negócio:**
+
+Em cenários reais, a carreta pode ser matematicamente ideal por custo/m³, mas operacionalmente inviável por:
+
+- rua estreita
+- proibição municipal para veículo pesado
+- área de giro insuficiente
+- ausência de doca compatível
+- restrição horária
+
+Portanto, o motor de recomendação não pode usar somente otimização de frete. Deve haver uma etapa anterior de **validação de elegibilidade logística**.
+
+### 12.4 Capacidade Logística e Regras de Volumetria
+
+#### 12.4.1 Capacidade nominal vs. capacidade operacional
+
+O sistema não deve trabalhar somente com capacidade nominal publicada. Em logística real, a capacidade efetiva costuma ser menor por fatores como:
+
+- geometria irregular das peças
+- paletização
+- folgas de amarração
+- necessidade de segregação
+- restrições de empilhamento
+- proteção de superfícies
+- acesso para descarga
+- ocupação não uniforme
+
+Portanto, cada veículo deve possuir no cadastro pelo menos:
+
+- `capacidade_m3_nominal`
+- `capacidade_m3_operacional`
+- `peso_maximo_nominal_kg`
+- `peso_maximo_operacional_kg`
+- `ocupacao_maxima_percentual`
+
+Exemplo:
+
+- carreta nominal: `60 m³`
+- ocupação operacional segura: `54 m³` a `57 m³`, dependendo do perfil da carga
+
+Essa abordagem evita que o sistema recomende um veículo no limite teórico e falhe na execução física da carga.
+
+#### 12.4.2 Regras mínimas de elegibilidade
+
+Antes de recomendar um veículo, o motor deve validar:
+
+1. `volumeTotal <= capacidade_m3_operacional`
+2. `pesoTotal <= peso_maximo_operacional_kg`
+3. maior peça cabe nas dimensões úteis internas
+4. rota aceita o tipo de veículo
+5. destino aceita o tipo de veículo
+6. quantidade de eixos é compatível com custo e restrições
+7. o tipo de operação permite o modal
+
+Se qualquer uma dessas regras falhar, o veículo deve ser descartado do conjunto elegível.
+
+#### 12.4.3 Peso, cubagem e densidade
+
+A divergência entre peso e cubagem precisa ser tratada explicitamente. Dois pedidos com `38 m³` podem gerar recomendações diferentes:
+
+- carga leve e volumosa: tende a esgotar volume antes do peso
+- carga densa: tende a esgotar peso antes do volume
+
+Logo, o sistema deve calcular:
+
+```text
+densidade_media_kg_m3 = pesoTotalKg / volumeTotalM3
+```
+
+E manter regras como:
+
+- veículo com alta capacidade cúbica não é automaticamente elegível para carga pesada
+- veículo com alto payload pode ser inadequado para carga volumosa
+- ocupação deve ser acompanhada em dois eixos:
+  - ocupação volumétrica
+  - ocupação de peso
+
+#### 12.4.4 Metros de carroceria como abstração comercial
+
+O cálculo atual de metros de carroceria continua válido como abstração comercial, mas precisa coexistir com a modelagem física real de veículo.
+
+Ou seja:
+
+- `metrosCarroceria` pode continuar sendo a unidade de precificação ou negociação
+- `VehicleType` define a viabilidade física da operação
+- a recomendação de veículo deve vir **antes** da precificação final
+
+Em outras palavras:
+
+1. validar elegibilidade física
+2. recomendar veículo ou composição
+3. calcular custo do frete
+4. calcular pedágio
+5. aplicar margem comercial
+
+### 12.5 Estrutura Sugerida de Dados
+
+#### 12.5.1 Entidade principal `VehicleType`
+
+Estrutura mínima sugerida:
+
+```java
+public class VehicleType {
+    private UUID id;
+    private String nome;
+    private String categoria;
+    private BigDecimal comprimento;
+    private BigDecimal largura;
+    private BigDecimal altura;
+    private BigDecimal capacidadeM3;
+    private BigDecimal pesoMaximo;
+    private Integer quantidadeEixos;
+    private BigDecimal custoKm;
+    private BigDecimal pedagioPorEixo;
+    private Boolean permiteAreaUrbana;
+    private Boolean permiteCargaFracionada;
+    private Boolean ativo;
+}
+```
+
+Para uso enterprise, essa estrutura deve ser expandida. Campos adicionais recomendados:
+
+- `capacidade_m3_nominal`
+- `capacidade_m3_operacional`
+- `peso_maximo_nominal_kg`
+- `peso_maximo_operacional_kg`
+- `tara_kg`
+- `payload_kg`
+- `comprimento_interno_m`
+- `largura_interna_m`
+- `altura_interna_m`
+- `comprimento_total_conjunto_m`
+- `altura_total_veiculo_m`
+- `restricao_urbana`
+- `restricao_altura`
+- `restricao_peso_por_eixo`
+- `requer_doca`
+- `permite_multi_entrega`
+- `fator_ocupacao_padrao`
+- `modal`
+- `submodal`
+- `tipo_carroceria`
+
+#### 12.5.2 Tabelas auxiliares recomendadas
+
+Para suportar crescimento nacional e múltiplas transportadoras, a modelagem não deve concentrar tudo em uma tabela única. Recomenda-se:
+
+- `vehicle_type`
+- `vehicle_type_dimension`
+- `vehicle_operational_rule`
+- `vehicle_route_restriction`
+- `vehicle_region_restriction`
+- `carrier_vehicle_profile`
+- `freight_table`
+- `toll_profile`
+- `route_constraint`
+- `destination_constraint`
+
+#### 12.5.3 Restrições por região e rota
+
+Uma arquitetura realista deve permitir regras como:
+
+- transportadora A aceita carreta em SP capital apenas fora do horário comercial
+- cliente B não recebe carreta por ausência de pátio
+- rota C possui ponte com restrição de altura
+- município D restringe circulação de veículo pesado
+
+Logo, regras de elegibilidade precisam ser **dados**, não código fixo.
+
+### 12.6 Estratégia de Recomendação de Veículos
+
+O sistema deve executar a recomendação em múltiplas etapas.
+
+#### 12.6.1 Pipeline lógico
+
+1. calcular cubagem total
+2. calcular peso total
+3. identificar restrições da rota
+4. identificar restrições urbanas
+5. identificar limitações do destino
+6. filtrar veículos elegíveis
+7. calcular quantidade necessária de cada veículo
+8. estimar frete e pedágio
+9. ranquear por estratégia de negócio
+10. recomendar:
+   - melhor custo
+   - menor quantidade de veículos
+   - melhor aproveitamento volumétrico
+
+#### 12.6.2 Estratégias de ranking
+
+O motor deve suportar múltiplos objetivos:
+
+- `LOWEST_COST`
+- `LOWEST_VEHICLE_COUNT`
+- `BEST_VOLUME_UTILIZATION`
+- `BEST_OPERATIONAL_SAFETY`
+- `PREFER_URBAN_ACCESS`
+
+Isso evita acoplamento do sistema a uma única política de negócio.
+
+#### 12.6.3 Exemplos de recomendação
+
+**Exemplo 1:**
+
+- carga: `38 m³`
+- peso compatível com veículo rígido
+- destino com limitação de manobra
+- resultado esperado:
+  - **1 caminhão truque**
+
+**Exemplo 2:**
+
+- carga: `58 m³`
+- rota rodoviária sem restrição urbana crítica
+- destino aceita conjunto articulado
+- resultado esperado:
+  - **1 carreta**
+
+**Exemplo 3:**
+
+- carga: `120 m³`
+- rota rodoviária convencional
+- resultado esperado:
+  - **2 carretas**
+
+#### 12.6.4 Pseudocódigo sugerido
+
+```java
+public VehicleRecommendation recommend(LoadProfile load, RouteContext route, DestinationContext destination) {
+    List<VehicleType> activeVehicles = vehicleTypeRepository.findEligibleBaseSet(load.operationType());
+
+    List<VehicleType> eligible = activeVehicles.stream()
+        .filter(v -> vehicleEligibilityService.supportsVolume(v, load.totalVolumeM3()))
+        .filter(v -> vehicleEligibilityService.supportsWeight(v, load.totalWeightKg()))
+        .filter(v -> vehicleEligibilityService.supportsDimensions(v, load.maxPieceDimensions()))
+        .filter(v -> routeRestrictionService.isAllowed(v, route))
+        .filter(v -> destinationRestrictionService.isAllowed(v, destination))
+        .toList();
+
+    List<VehicleScenario> scenarios = compositionService.buildScenarios(load, eligible);
+
+    scenarios.forEach(s -> {
+        s.setFreightCost(freightSimulationService.simulate(s, route));
+        s.setTollCost(tollSimulationService.simulate(s, route));
+        s.setUtilization(volumeUtilizationService.calculate(s, load));
+        s.setScore(vehicleRankingService.score(s, route.businessObjective()));
+    });
+
+    return scenarios.stream()
+        .min(Comparator.comparing(VehicleScenario::getScore))
+        .map(vehicleRecommendationMapper::toResult)
+        .orElseThrow(() -> new NoEligibleVehicleException("Nenhum veículo elegível para a operação"));
+}
+```
+
+### 12.7 Regras Futuras Importantes
+
+O sistema deve ser preparado desde já para evoluir em direção a um motor logístico avançado com:
+
+- roteirização
+- composição híbrida de veículos
+- múltiplos centros de distribuição
+- carga fracionada
+- otimização por custo
+- otimização por volumetria
+- heurísticas logísticas
+- IA para recomendação de carga
+- algoritmo de bin packing
+- cálculo de ocupação 3D
+
+#### 12.7.1 Bin packing e ocupação tridimensional
+
+O cálculo por m³ total é útil para MVP, mas insuficiente para operações mais complexas. Em cargas com peças longas, frágeis ou não empilháveis, dois pedidos com mesmo volume podem exigir veículos diferentes.
+
+Portanto, a evolução natural do sistema deve incluir:
+
+- modelagem de dimensões por volume/peça
+- regra de empilhamento
+- orientação permitida da peça
+- agrupamento por compatibilidade
+- heurística de encaixe 3D
+- cálculo de ocupação longitudinal da carroceria
+
+Esse ponto é crítico para evitar recomendações incorretas em cargas com:
+
+- peças longas
+- perfis metálicos
+- painéis
+- estruturas com baixa modularidade
+- itens que exigem separação
+
+### 12.8 Problemas Reais que o Sistema Deve Prever
+
+O domínio logístico precisa prever explicitamente problemas operacionais comuns:
+
+- excesso de peso por eixo
+- baixa ocupação da carga
+- rota sem acesso para carreta
+- altura máxima permitida
+- restrição municipal
+- custo elevado de pedágio
+- necessidade de carga fracionada
+- divergência entre peso e cubagem
+- desperdício de espaço
+- múltiplas entregas
+- múltiplos destinos
+- cargas incompatíveis
+
+#### 12.8.1 Casos adicionais que merecem regra explícita
+
+- impossibilidade de descarregar peça longa em doca pequena
+- rota com ponte/viaduto incompatível com altura total
+- operação economicamente inviável por excesso de pedágio em veículo de muitos eixos
+- consolidação inadequada de cargas incompatíveis
+- necessidade de desmembramento em múltiplos veículos menores
+
+### 12.9 APIs e Serviços Sugeridos
+
+Para suporte operacional real, o backend deve ser desenhado com portas de integração para mapas, distância, pedágio e roteirização.
+
+#### 12.9.1 Mapas, distância e geolocalização
+
+**Google Maps Platform**
+
+- geocoding
+- distance matrix / routes
+- cálculo de tempo estimado
+- cálculo de pedágio via rotas suportadas
+- ecossistema robusto
+
+**Mapbox**
+
+- roteirização
+- geocoding
+- matrizes de distância
+- visualização e tracking
+- alternativa forte para aplicações customizadas
+
+**HERE Maps**
+
+- roteirização corporativa
+- suporte forte para logística
+- recursos avançados para navegação e restrições
+
+**OpenRouteService**
+
+- alternativa com perfil `driving-hgv`
+- útil para prototipação e cenários com menor custo
+- boa opção para benchmarking de rotas
+
+#### 12.9.2 APIs de pedágio
+
+**Google Routes Preferred API**
+
+- suporta cálculo de pedágio em rotas elegíveis
+- útil para composição inicial de custo de viagem
+
+**Maplink Toll API**
+
+- cálculo de pedágio com detalhamento por praça
+- suporta lógica por tipo de veículo e eixos
+- aderente ao cenário brasileiro
+
+**AILOG API de Pedágio**
+
+- foco no mercado brasileiro
+- cálculo por categoria de veículo, eixos e cenário de cobrança
+
+#### 12.9.3 Diretriz arquitetural para integrações
+
+Nunca acoplar domínio diretamente ao provider externo. O backend deve usar interfaces como:
+
+- `DistanceProvider`
+- `RoutingProvider`
+- `TollProvider`
+- `GeocodingProvider`
+
+Com implementações concretas:
+
+- `GoogleRoutingProvider`
+- `MapboxRoutingProvider`
+- `HereRoutingProvider`
+- `MaplinkTollProvider`
+- `AilogTollProvider`
+
+Assim, o sistema preserva:
+
+- testabilidade
+- troca de fornecedor
+- fallback operacional
+- comparação entre providers
+- resiliência contratual/comercial
+
+### 12.10 Estratégia Arquitetural Backend Enterprise
+
+#### 12.10.1 Separação de bounded contexts
+
+Para escalar corretamente, o backend deve separar ao menos os seguintes contextos:
+
+- `Catalog`
+  - produtos, dimensões, pesos, regras de empilhamento
+- `Order Intake`
+  - importação de PDF, extração de itens, validação de pedido
+- `Volumetry`
+  - cálculo cúbico, fatores de ajuste, cubagem consolidada
+- `Transport Planning`
+  - veículos, elegibilidade, recomendação, composição
+- `Freight Pricing`
+  - tabelas, simulação de frete, margem comercial
+- `Toll`
+  - cálculo de pedágio por rota/veículo
+- `Proposal`
+  - composição comercial final
+
+Essa separação reduz acoplamento e evita que regras de transporte contaminem o módulo de volumetria ou o módulo comercial.
+
+#### 12.10.2 Componentes de domínio recomendados
+
+- `VehicleTypeService`
+- `VehicleEligibilityService`
+- `VehicleCompositionService`
+- `RouteRestrictionService`
+- `DestinationRestrictionService`
+- `FreightSimulationService`
+- `TollSimulationService`
+- `VehicleRecommendationService`
+- `TransportPlanningFacade`
+
+#### 12.10.3 Persistência e performance
+
+Para cenários enterprise:
+
+- regras configuráveis devem ser persistidas em banco relacional
+- lookup de elegibilidade pode usar cache por chave de contexto
+- cálculos pesados podem ser assíncronos em cenários de alta volumetria
+- tabelas de frete e pedágio devem ser versionadas
+- recomendações devem ser auditáveis
+
+Campos de auditoria recomendados:
+
+- `created_at`
+- `updated_at`
+- `created_by`
+- `updated_by`
+- `version`
+- `valid_from`
+- `valid_to`
+
+#### 12.10.4 Preparação para crescimento nacional e internacional
+
+O sistema deve nascer preparado para:
+
+- crescimento nacional
+- múltiplas transportadoras
+- múltiplos modais
+- operações internacionais
+
+Isso implica:
+
+- suporte a múltiplas unidades de medida
+- parametrização por país/região
+- modelagem de taxas extras fora do frete-base
+
+### 12.11 Requisitos Funcionais Novos Recomendados
+
+Para refletir a nova maturidade do domínio, recomenda-se acrescentar futuramente requisitos formais como:
+
+- `RF-025` Cadastro de tipos de veículos e carrocerias
+- `RF-026` Parametrização de capacidades operacionais por veículo
+- `RF-027` Cadastro de restrições logísticas por destino
+- `RF-028` Cadastro de restrições por região/rota
+- `RF-029` Recomendação automática de veículo
+- `RF-030` Simulação de composição com múltiplos veículos
+- `RF-031` Integração com provedor de pedágio
+- `RF-032` Integração com provedor de rotas/distância
+- `RF-033` Auditoria da decisão de recomendação logística
+
+### 12.12 Conclusão Técnica
+
+Para o sistema evoluir de uma calculadora de estimativa para uma solução logística robusta, ele deve tratar transporte como um domínio próprio, com entidades, regras e serviços especializados. A inclusão de **truque** e **carreta** é o primeiro passo para sair de um modelo simplificado e chegar a uma arquitetura próxima de um **TMS enterprise**, onde recomendação, custo, elegibilidade e restrições operacionais são calculados de forma auditável, parametrizável e escalável.
 
 ---
 
