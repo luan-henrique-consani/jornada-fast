@@ -118,6 +118,7 @@ O frontend React será responsável por:
 ### Frontend
 
 - React
+- Vite
 
 ## 7. O que você deve produzir
 

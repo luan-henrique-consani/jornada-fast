@@ -142,12 +142,15 @@ A empresa **Fast Gôndulas Ind. Com. Ltda.** é uma indústria de equipamentos p
 
 ---
 
-### 4. VISUALIZAÇÃO DO PDF
-**Layout:** Split view: PDF à esquerda (60%) + Dados extraídos à direita (40%)  
+### 4. VISUALIZAÇÃO DO PDF ORIGINAL (Arquivo Enviado)
+**Objetivo:** Exibir o PDF/Excel original enviado pelo comercial para referência durante a revisão dos dados extraídos.  
+**Layout:** Split view — PDF à esquerda (60%) + Dados extraídos à direita (40%)  
 **PDF Viewer:** Toolbar com: zoom in/out, fit page, navigate pages, download  
-**Painel direito:** Tabs — "Dados da OC" | "Itens Extraídos"  
+**Painel direito:** Tabs — "Dados da OC" | "Itens Extraídos"
 - Dados da OC: número, cliente, data, condição de pagamento
 - Itens Extraídos: tabela com código, descrição, quantidade — itens com problema destacados em âmbar
+
+**Nota:** Esta tela exibe o documento de origem (somente leitura). A pré-visualização do PDF final gerado pelo sistema está na tela de Geração de Proposta (seção 11).
 
 ---
 
@@ -290,42 +293,139 @@ Card fixo com:
 
 ---
 
-### 11. TELA DE GERAÇÃO DE PROPOSTA
-**Objetivo:** Preview da proposta antes de exportar.  
-**Layout:** Preview da proposta em formato A4 simulado + painel de configurações à direita
+### 11. TELA DE GERAÇÃO DE PROPOSTA — DOCUMENTO VIVO (Live PDF Preview)
 
-**Preview A4 (esquerda):**  
-Documento simulado com:
-- Header Fast Gôndulas (logo + dados empresa)
-- Dados da OC e do cliente
-- Tabela de itens (resumida)
-- Quadro de logística
-- Quadro financeiro
-- Condições e observações
-- Assinatura
+**Objetivo:** O operador edita parâmetros finais e visualiza em tempo real o documento exato que será exportado. A pré-visualização é um espelho fiel do PDF oficial — sem divergências.
 
-**Painel de Configurações (direita):**  
-- Observações da proposta (textarea)
-- Validade (date picker)
-- Condições de pagamento (select + campo livre)
-- Incluir: [ ] Detalhamento de itens [ ] Mapa de rota [ ] Comparativo de modais
-- Botão "Exportar PDF" (primário)
-- Botão "Enviar por Email" (secundário)
-- Botão "Salvar Rascunho" (ghost)
+**Conceito central:** "Documento vivo" — qualquer alteração de input atualiza instantaneamente o preview e recalcula todos os valores. Não há botão "recalcular" — o sistema responde de forma síncrona a cada mudança.
+
+**Layout:** Dois painéis fixos lado a lado (altura full-screen, sem scroll da página):
+- **Esquerda (45%):** Painel de edição com todos os inputs
+- **Direita (55%):** Preview do documento A4 com scroll interno próprio
 
 ---
 
-### 12. EXPORTAÇÃO PDF
-**Estado durante exportação:**  
-Overlay com progresso: "Gerando PDF..." + spinner + etapas (Montando dados → Renderizando → Otimizando → Pronto)  
-**Estado após exportação:**  
-Card de sucesso com:
-- Ícone check verde
-- Nome do arquivo gerado
-- Botão "Baixar PDF"
-- Botão "Abrir Preview"
-- Botão "Nova Proposta"
-- Botão "Ver Histórico"
+#### Painel de Edição (esquerda)
+
+**Seção: Dados do Projeto**
+- Input: Número da OC (pré-preenchido, editável)
+- Input: Nome do cliente (pré-preenchido, editável)
+- Input: Data da proposta (date picker)
+- Textarea: Observações gerais
+
+**Seção: Sessão de Frete — Dinâmica e Expansível**
+
+Tabela editável onde cada linha representa um tipo de veículo:
+
+| Tipo de Veículo | Quantidade | Custo Unit. | Subtotal |
+|---|---|---|---|
+| [Select ▼] | [Input numérico] | R$ XX.XXX | R$ XX.XXX |
+
+- Cada linha tem: Select de tipo de veículo + Input de quantidade + Custo unitário (vindo do backend) + Subtotal calculado + Botão "×" para remover
+- Botão **"+ Adicionar veículo"** no rodapé da tabela adiciona nova linha em branco
+- Tipos disponíveis: Carreta, Truck, VUC, Toco, Bitrem (e futuros)
+- A cada alteração de tipo ou quantidade → sistema chama o backend → atualiza custos e totais → preview atualiza instantaneamente
+
+**Seção: Parâmetros Financeiros**
+- Input: Margem Fast (%) — slider + input numérico
+- Input: Descontos (R$ ou %)
+- Input: Adicionais (seguros, manuseio)
+- Select: Condição de pagamento
+- Date picker: Validade da proposta
+
+**Seção: Conteúdo do Documento**
+- Checkboxes: [ ] Incluir detalhamento de itens [ ] Incluir comparativo de modais
+- Textarea: Observações específicas da proposta
+
+**Rodapé do painel (sticky):**
+- Indicador de sincronização: "● Sincronizado" / "⟳ Recalculando..." / "✗ Erro"
+- Botão **"Baixar PDF"** (primário, laranja, full-width) — habilitado apenas quando sincronizado
+- Botão "Salvar Rascunho" (ghost, secundário)
+
+---
+
+#### Preview do Documento A4 (direita)
+
+Simulação visual fiel ao PDF oficial, com scroll interno. Atualiza automaticamente a cada mudança de input (sem reload).
+
+**Estrutura do documento simulado:**
+
+```
+┌─────────────────────────────────────────┐
+│  [Logo Fast Gôndulas]      [Data]       │
+│  Fast Gôndulas Ind. Com. Ltda.          │
+│  CNPJ: XX.XXX.XXX/XXXX-XX              │
+├─────────────────────────────────────────┤
+│  PROPOSTA COMERCIAL DE FRETE            │
+│  OC: XXXXXXX  |  Cliente: XXXXXXXX     │
+├─────────────────────────────────────────┤
+│  DADOS DO PROJETO                       │
+│  Volumetria total: XXX,XX m³            │
+│  Modal: Caminhão / Container            │
+├─────────────────────────────────────────┤
+│  COMPOSIÇÃO DE FRETE                    │
+│  ┌──────────────┬──────┬───────────┐    │
+│  │ Tipo         │ Qtd  │ Subtotal  │    │
+│  │ Carreta      │  2   │ R$ XX.XXX │    │
+│  │ Truck        │  1   │ R$ XX.XXX │    │
+│  └──────────────┴──────┴───────────┘    │
+├─────────────────────────────────────────┤
+│  RESUMO FINANCEIRO                      │
+│  Frete bruto:         R$ XX.XXX,XX      │
+│  Pedágios:            R$ XX.XXX,XX      │
+│  Adicionais:          R$  X.XXX,XX      │
+│  Descontos:          (R$  X.XXX,XX)     │
+│  ─────────────────────────────────      │
+│  TOTAL AO CLIENTE:   R$ XX.XXX,XX      │
+├─────────────────────────────────────────┤
+│  Validade: XX/XX/XXXX                   │
+│  Condição: XX DDL                       │
+│  Observações: ...                       │
+├─────────────────────────────────────────┤
+│  [Assinatura]          [Cargo]          │
+└─────────────────────────────────────────┘
+```
+
+**Comportamento do preview:**
+- Valores numéricos atualizam com animação de transição suave (número desliza para novo valor)
+- Linhas da tabela de fretes adicionam/removem com animação de fade
+- Badge no canto superior direito: "● Ao Vivo" (verde pulsante quando conectado ao SSE)
+- Highlight sutil (fundo levemente âmbar por 800ms) nas seções que foram recalculadas
+- O documento renderizado é idêntico ao PDF que será baixado — zero divergência
+
+---
+
+#### Fluxo Completo de Uso
+
+```
+1. Usuário chega nesta tela com proposta já calculada
+2. Preview carrega com dados atuais
+3. Usuário altera: tipo de veículo → quantidade → parâmetros financeiros
+4. A cada alteração: backend recalcula → SSE notifica → preview atualiza
+5. Usuário vê o documento final em tempo real
+6. Quando satisfeito → clica "Baixar PDF"
+7. Sistema gera o PDF exatamente igual ao preview
+8. Download iniciado automaticamente
+```
+
+---
+
+### 12. DOWNLOAD DO PDF
+
+**Não há tela separada de exportação.** O download é uma ação inline na tela de Geração de Proposta.
+
+**Estado do botão "Baixar PDF":**
+- **Desabilitado + spinner:** quando há recálculo em andamento ("Recalculando...")
+- **Habilitado:** quando preview está sincronizado e pronto
+- **Loading no clique:** botão exibe spinner + "Gerando PDF..." por 1-3 segundos
+- **Após geração:** toast de sucesso "PDF gerado — download iniciado" + o arquivo baixa automaticamente
+
+**Garantia de fidelidade:** O PDF baixado é gerado a partir do mesmo estado de dados exibido no preview. Se o preview está mostrando R$ 45.200,00, o PDF conterá exatamente R$ 45.200,00.
+
+**Ação pós-download:**
+- Toast com opções: "Ver Histórico" | "Nova Proposta"
+- Status da proposta muda automaticamente para "EXPORTADO"
+- Entrada de auditoria criada com timestamp e usuário
 
 ---
 
@@ -444,6 +544,41 @@ Login
 6. **States** para cada componente interativo (default, hover, focus, active, disabled, loading, error)
 7. **Dark mode** (opcional — apenas tokens e Dashboard)
 8. **Handoff annotations** com medidas, cores e comportamentos para o desenvolvedor
+
+---
+
+## PRINCÍPIOS DE ATUALIZAÇÃO SÍNCRONA (Design Behavior)
+
+Estes princípios devem ser refletidos visualmente em todo o design system:
+
+### Reatividade de Inputs
+Todo input do sistema (quantidade de peças, tipo de veículo, quantidade de frota, valores financeiros) deve ter comportamento síncrono. O design deve prever:
+- **Estado padrão:** campo editável com valor
+- **Estado em edição:** borda destacada (primary), sem indicador de "salvo" ainda
+- **Estado sincronizando:** ícone de spinner sutil no campo ou na linha (não bloqueia interação)
+- **Estado atualizado:** brilho sutil de confirmação (verde, 600ms) e preview já refletindo o novo valor
+- **Estado de erro:** borda vermelha + mensagem inline, preview mantém último valor válido
+
+### Indicadores de Sincronização (global)
+O design deve incluir um componente de status de sincronização visível durante todo o fluxo da proposta:
+- Pill no header da tela: `● Sincronizado` (verde) | `⟳ Recalculando...` (âmbar, animado) | `✗ Erro de sincronização` (vermelho)
+- Nunca bloquear a interface durante recálculo — apenas indicar o estado
+
+### Sessão de Frete Dinâmica (padrão visual)
+O design da tabela de fretes deve seguir este padrão em todas as telas onde aparece:
+- Linhas adicionáveis com botão "+" no rodapé
+- Cada linha com Select (tipo veículo) + Input numérico (quantidade) + valor calculado + botão "×"
+- Linha de totais fixada no rodapé da tabela, sempre visível
+- Ao adicionar/remover linhas: animação de fade-in/fade-out (150ms)
+- Ao alterar quantidade: o valor calculado na mesma linha transita suavemente para o novo número
+
+### Preview do PDF como Espelho
+O preview do documento final deve transmitir visualmente a ideia de "documento vivo":
+- Borda sutil diferenciando a área do documento (shadow-md, background branco)
+- Badge "● Ao Vivo" no canto superior do preview
+- Seções que sofreram alteração fazem highlight por 800ms (fundo âmbar muito suave: `#FEF9C3`)
+- Valores numéricos transitam com animação (número antigo sai, novo entra — 200ms)
+- Layout do preview idêntico ao PDF exportado (mesma hierarquia tipográfica, mesmos espaçamentos)
 
 ---
 
