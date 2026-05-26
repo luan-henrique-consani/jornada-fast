@@ -3,10 +3,8 @@ import { NavLink } from 'react-router-dom'
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/produtos', label: 'Produtos' },
-  { to: '/clientes', label: 'Clientes' },
-  { to: '/ordens', label: 'Ordens de Compra' },
+  { to: '/ordens-compra', label: 'Ordens de Compra' },
   { to: '/estimativas', label: 'Estimativas' },
-  { to: '/nomenclaturas', label: 'Nomenclaturas' },
   { to: '/parametros', label: 'Parâmetros' },
 ]
 
