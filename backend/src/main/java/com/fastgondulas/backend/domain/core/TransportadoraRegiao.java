@@ -23,7 +23,7 @@ public class TransportadoraRegiao {
     @Column(name = "transportadora_id")
     private long transportadoraId;
 
-    @Column(name = "uf")
+    @Column(name = "uf", columnDefinition = "bpchar(2)")
     private String uf;
     
     @Column(name = "cidade")

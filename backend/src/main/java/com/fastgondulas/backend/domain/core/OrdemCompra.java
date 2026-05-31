@@ -45,7 +45,7 @@ public class OrdemCompra {
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 
-    @Column(name = "atulizado_em")
+    @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
 
     @Column(name = "criado_por")

@@ -45,7 +45,7 @@ public class EnderecoEntrega {
     @Column(name = "cidade", length = 100)
     private String cidade;
 
-    @Column(name = "uf", length = 2)
+    @Column(name = "uf", columnDefinition = "bpchar(2)")
     private String uf;
 
     @Column(name = "cep", length = 10)

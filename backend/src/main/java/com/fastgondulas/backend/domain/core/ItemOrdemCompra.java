@@ -1,5 +1,6 @@
 package com.fastgondulas.backend.domain.core;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,12 +32,12 @@ public class ItemOrdemCompra {
     private String descricao;
 
     @Column(name = "quantidade")
-    private long quantidade;
+    private BigDecimal quantidade;
 
     @Column(name = "unidade")
     private String unidade;
 
-    @Column(name = "criando_em")
+    @Column(name = "criado_em")
     private LocalDateTime criandoEm;
     
 }
