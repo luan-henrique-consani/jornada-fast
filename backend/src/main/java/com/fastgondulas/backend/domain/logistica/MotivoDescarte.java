@@ -1,0 +1,12 @@
+package com.fastgondulas.backend.domain.logistica;
+
+public enum MotivoDescarte {
+    DESTINO_NAO_ACEITA_CARRETA,
+    RESTRICAO_URBANA,
+    DOCA_INSUFICIENTE,
+    CAPACIDADE_VOLUMETRICA_INSUFICIENTE,
+    PESO_EXCEDIDO,
+    RESTRICAO_ALTURA,
+    MANOBRA_INSUFICIENTE,
+    TRANSPORTADORA_NAO_OPERA
+}

@@ -1,919 +1,634 @@
-# Prompt enterprise para gerar backend logístico com Spring Boot
+# Prompt para refinar backend Spring Boot existente
 
-Quero que você atue como um **Arquiteto de Software Sênior + Analista de Negócios + Especialista em Logística, Cubagem e Frete**, com foco total em **backend Java Spring Boot enterprise**.
+Atue como **Principal Software Engineer + Arquiteto de Software + Especialista em Spring Boot + Especialista em Segurança de APIs**.
 
-Seu objetivo é transformar o cenário abaixo em uma **especificação técnica extremamente detalhada** e pronta para implementação de um backend robusto, escalável, auditável e preparado para crescimento nacional.
+Sua missão é analisar o projeto atual e gerar uma **especificação completa da camada de aplicação backend** com foco em:
 
-## 1. Contexto real do negócio
-
-Estou desenvolvendo um sistema para uma empresa que projeta e monta estruturas comerciais, como:
-
-- mercados
-- galpões
-- gôndolas
-- estruturas metálicas
-- checkouts
-- porta pallets
-- equipamentos e peças correlatas
-
-## 2. Fluxo operacional atual da empresa
-
-O fluxo do negócio funciona assim:
-
-1. O cliente entra em contato com o setor comercial informando que deseja montar uma estrutura comercial.
-2. O cliente envia as dimensões do galpão, loja ou área física.
-3. O comercial repassa essas informações para o arquiteto/projetista.
-4. O arquiteto/projetista cria o layout e gera arquivos como PDF e/ou Excel contendo:
-   - lista de peças
-   - dimensões
-   - peso
-   - quantidades
-   - valores
-   - eventualmente cubagem
-5. O comercial monta a proposta comercial.
-6. O sistema que será desenvolvido ficará responsável pela parte logística e de frete.
-
-## 3. Objetivo principal do sistema
-
-O backend deve ser responsável por:
-
-- receber PDFs e planilhas Excel enviados pelo comercial ou projetista
-- ler e extrair os dados dos documentos
-- estruturar os itens da proposta
-- salvar os dados em banco
-- calcular cubagem/volumetria
-- calcular peso total
-- recomendar automaticamente veículos ideais
-- modelar tipos de carroceria e capacidades logísticas
-- calcular ocupação da carga
-- integrar com APIs externas de rotas, distância, mapas, pedágios e eventualmente frete
-- calcular custo logístico final
-- consolidar valor comercial + valor logístico
-- retornar proposta final consolidada para o frontend
-
-## 4. Funcionamento esperado
-
-Fluxo principal:
-
-`PDF/Excel do comercial -> extração dos itens -> saneamento/normalização -> cálculo volumétrico -> recomendação de veículos -> cálculo de frete -> proposta consolidada`
-
-### Foco atual de negócio
-
-Neste momento, o domínio logístico deve considerar **apenas transporte rodoviário**, com foco inicial em:
-
-- caminhão truque
-- carreta
-
-Não priorize container, operação portuária ou intermodal neste momento.
-Esses pontos podem existir como evolução futura, mas **não devem dirigir a modelagem principal da primeira versão**.
-
-### Regra importante de operação
-
-O sistema deve recomendar os veículos automaticamente, mas o operador poderá alterar manualmente no frontend.
-
-Exemplo:
-
-- sistema recomenda:
-  - 6 carretas
-- operador altera para:
-  - 2 carretas
-  - 3 caminhões truque
-
-Após a alteração manual:
-
-- o frontend envia atualização síncrona
-- o backend deve recalcular automaticamente:
-  - frete
-  - ocupação
-  - pedágios
-  - custos por veículo
-  - custo total
-  - valor final da proposta
-
-## 5. Escopo do frontend e backend
-
-### Backend
-
-Minha responsabilidade é:
-
-- backend Java
+- Controllers
+- Services
+- DTOs
+- autenticação
+- autorização
+- JWT
+- Spring Security
+- fluxos REST
+- validações
 - regras de negócio
-- cálculos
-- cubagem
-- recomendação logística
-- integração com APIs externas
-- persistência no banco
-- versionamento de propostas
-- rastreabilidade
-- auditoria
-
-### Frontend
-
-O frontend React será responsável por:
-
-- exibir itens importados
-- exibir veículos recomendados
-- permitir edição manual da composição de veículos
-- recalcular em tempo real via backend
-- renderizar PDF da proposta
-- gerar PDF final para download
-
-## 6. Stack desejada
-
-### Backend
-
-- Java 17 ou superior
-- Spring Boot 3.x
-- PostgreSQL
-
-### Frontend
-
-- React
-- Vite
-
-## 7. O que você deve produzir
-
-Quero que você faça uma análise profunda e entregue uma **especificação enterprise** cobrindo:
-
-1. análise completa do cenário de negócio
-2. regras de negócio detalhadas
-3. requisitos funcionais e não funcionais
-4. arquitetura ideal
-5. modelagem de banco
-6. APIs externas reais recomendadas
-7. bibliotecas Java recomendadas
-8. decisão entre microsserviços e monolito modular
-9. fluxo completo do sistema
-10. diagramas textuais
-11. padrões de projeto recomendados
-12. estratégias de implementação dos cálculos
-13. performance, escalabilidade, auditoria e rastreabilidade
-14. estrutura limpa de pacotes, módulos e camadas
-15. endpoints REST
-16. DTOs
-17. entidades JPA
-18. uso de Flyway, Docker, mensageria, cache e filas
-19. validações críticas
-20. riscos de negócio e logística
-21. estratégias inteligentes de frete
-22. armazenamento de regras e fórmulas configuráveis
-23. suporte futuro a múltiplas transportadoras
-24. tabelas de frete por região
-25. múltiplos centros de distribuição
-26. arquitetura preparada para expansão nacional
-27. arquitetura pronta para futura camada de IA
-
-## 8. Regras obrigatórias de implementação e arquitetura
-
-- Use **POO de verdade**, com alta coesão e baixo acoplamento.
-- Use arquitetura limpa, explícita e preparada para manutenção.
-- Não coloque regra de negócio em controller.
-- Use `BigDecimal` para cálculos numéricos e monetários.
-- Não use `double` para cubagem, peso, custo ou frete.
-- Use `Bean Validation`.
-- Use `DTOs` de request/response.
-- Use `MapStruct`.
-- Use `Flyway`.
-- Use `Spring Data JPA`.
-- Use tratamento global de exceção.
-- Use versionamento de API em `/api/v1`.
-- Prepare o sistema para auditoria e rastreabilidade.
-- O sistema deve ser resiliente a documentos incompletos, divergentes ou sujos.
-- O sistema deve permitir evolução futura sem refazer o domínio.
-
-## 9. Análise de negócio que você deve considerar
-
-Você deve analisar profundamente os seguintes riscos e casos:
-
-- cubagem incorreta
-- peso excedente
-- combinação ruim de veículos
-- rota com pedágio muito caro
-- região com restrição para carreta
-- limitação por eixo
-- restrição urbana de circulação
-- custo mínimo de frete
-- carga fracionada
-- aproveitamento ruim de espaço
-- divergência entre PDF e Excel
-- inconsistência de medidas
-- itens sem peso
-- itens sem dimensão
-- itens com nomenclatura diferente para mesma peça
-- duplicidade de item
-- arredondamento incorreto
-- erro de unidade de medida
-- peça longa com baixo volume, mas inviável em veículo menor
-- peça leve e volumosa
-- peça pesada e compacta
-- necessidade de combinar volume, peso, comprimento e restrição operacional
-
-Também considere explicitamente:
-
-- destino que não aceita carreta
-- cliente com doca pequena
-- destino urbano com baixa capacidade de manobra
-- carreta economicamente melhor, mas operacionalmente inviável
-- truque mais caro por m³, porém necessário por restrição urbana
-- necessidade de decidir entre menor custo e maior viabilidade operacional
-
-## 10. Regras de negócio detalhadas esperadas
-
-### 10.1 Entrada documental
-
-O sistema deve suportar ingestão de:
-
-- PDF
-- XLS
-- XLSX
-- CSV, se útil como formato auxiliar
-
-Cada documento importado deve gerar:
-
-- registro de origem
-- hash do arquivo
-- versão
-- data de importação
-- usuário que importou
-- status de processamento
-- erros de parsing
-- confiança da extração por item/campo quando aplicável
-
-### 10.2 Extração e normalização
-
-O backend deve:
-
-- extrair nome da peça
-- largura
-- altura
-- profundidade
-- comprimento
-- peso unitário
-- quantidade
-- valor unitário
-- valor total
-- cubagem, se vier no documento
-- unidade de medida
-
-Depois deve:
-
-- normalizar nomes
-- converter unidades
-- validar consistência entre quantidade x valor unitário x valor total
-- validar consistência entre dimensões e cubagem
-- identificar conflitos entre PDF e Excel
-- permitir versionamento do resultado importado
-
-### 10.3 Cálculo de cubagem
-
-Quando cubagem não vier pronta:
-
-`cubagem_unitaria_m3 = comprimento_m * largura_m * altura_m`
-
-`cubagem_total_item = cubagem_unitaria_m3 * quantidade`
-
-Se a empresa usar fator de empilhamento, quebra técnica, folga operacional ou fator logístico, o sistema deve suportar parâmetros configuráveis por:
-
-- tipo de peça
-- família de produto
-- transportadora
-- região
-- operação
-
-### 10.4 Cálculo de peso
-
-`peso_total_item = peso_unitario_kg * quantidade`
-
-`peso_total_carga = soma(peso_total_item)`
-
-O sistema deve suportar:
-
-- peso bruto
-- peso líquido
-- peso faturado
-- peso cubado, se a transportadora usar regra própria
-
-### 10.5 Recomendação automática de veículos
-
-O sistema deve recomendar automaticamente composição de frota considerando ao mesmo tempo:
-
-- volume total
-- peso total
-- comprimento máximo por peça
-- altura máxima por peça
-- restrições de empilhamento
-- restrição por eixo
-- restrição da malha viária
-- restrição urbana
-- custo por km
-- pedágios
-- mínimo de frete
-- disponibilidade regional
-- custo operacional por veículo
-- taxa de ocupação mínima aceitável
-
-Veículos suportados inicialmente:
-
-- caminhão truque
-- carreta
-- outros parametrizáveis
-
-#### 10.5.1 Tipos de carroceria e capacidades iniciais
-
-O backend deve modelar explicitamente os tipos de carroceria como entidades configuráveis do domínio.
-
-Foco inicial obrigatório:
-
-**Caminhão truque**
-- capacidade volumétrica aproximada entre **35 m³ e 40 m³**
-- indicado para entregas urbanas
-- indicado para locais com limitação de manobra
-- indicado para cargas fracionadas
-- pode ter menor custo absoluto em alguns cenários
-- pode ter custo relativo maior por m³ quando mal ocupado
-- pode possuir restrição de peso própria
-- pode possuir restrição de altura
-- pode possuir regra regional por transportadora
-
-**Carreta**
-- capacidade volumétrica aproximada entre **55 m³ e 60 m³**
-- considerar pelo menos:
-  - carreta padrão `12,3 m`
-  - carreta extendida `14 m`
-- indicada para cargas maiores
-- melhor diluição de frete em cargas consolidadas
-- maior custo operacional absoluto
-- maior custo de pedágio em alguns cenários
-- maior restrição urbana
-- maior necessidade de área de manobra
-- pode exigir doca compatível
-
-#### 10.5.2 Regras obrigatórias de elegibilidade logística
-
-Antes de recomendar qualquer veículo, o backend deve validar:
-
-1. se o `volumeTotal` cabe na capacidade operacional do veículo
-2. se o `pesoTotal` cabe no limite operacional do veículo
-3. se a maior peça cabe nas dimensões úteis internas
-4. se o destino aceita carreta
-5. se há restrição urbana para veículo articulado
-6. se há limitação de doca ou pátio
-7. se há restrição de altura
-8. se há restrição regional por transportadora
-9. se a ocupação mínima é economicamente aceitável
-
-Se a elegibilidade falhar, o veículo deve ser descartado do ranking.
-
-#### 10.5.3 Estratégia de recomendação
-
-O motor de recomendação deve executar pelo menos estas etapas:
-
-1. calcular cubagem total
-2. calcular peso total
-3. identificar restrições da rota
-4. identificar restrições urbanas
-5. identificar limitações do destino
-6. filtrar veículos elegíveis
-7. calcular quantidade necessária por tipo de veículo
-8. estimar frete e pedágio
-9. ranquear cenários
-10. recomendar:
-   - menor custo
-   - menor quantidade de veículos
-   - melhor aproveitamento volumétrico
-   - melhor viabilidade operacional
-
-#### 10.5.4 Exemplos que a análise deve cobrir
-
-- carga `38 m³` com destino urbano apertado:
-  - tendência de recomendação: **1 caminhão truque**
-- carga `58 m³` sem restrição de acesso:
-  - tendência de recomendação: **1 carreta**
-- carga `120 m³` em rota rodoviária convencional:
-  - tendência de recomendação: **2 carretas**
-
-#### 10.5.5 Estrutura mínima de modelagem de veículo
-
-A análise deve propor algo próximo de:
-
-```java
-public class VehicleType {
-    private UUID id;
-    private String nome;
-    private String categoria;
-    private BigDecimal comprimento;
-    private BigDecimal largura;
-    private BigDecimal altura;
-    private BigDecimal capacidadeM3;
-    private BigDecimal pesoMaximo;
-    private Integer quantidadeEixos;
-    private BigDecimal custoKm;
-    private BigDecimal pedagioPorEixo;
-    private Boolean permiteAreaUrbana;
-    private Boolean permiteCargaFracionada;
-    private Boolean ativo;
-}
-```
-
-E também deve sugerir evolução para campos como:
-
-- `capacidade_m3_nominal`
-- `capacidade_m3_operacional`
-- `peso_maximo_nominal_kg`
-- `peso_maximo_operacional_kg`
-- `comprimento_interno_m`
-- `largura_interna_m`
-- `altura_interna_m`
-- `altura_total_veiculo_m`
-- `restricao_urbana`
-- `restricao_altura`
-- `restricao_peso_por_eixo`
-- `requer_doca`
-- `permite_multi_entrega`
-- `fator_ocupacao_padrao`
-- `tipo_carroceria`
-
-### 10.6 Alteração manual da composição
-
-O operador poderá substituir a recomendação.
-
-O backend deve receber a composição manual e recalcular:
-
-- ocupação por veículo
-- peso por veículo
-- volume por veículo
-- custo de cada veículo
-- custo total de frete
-- pedágio
-- distância
-- valor final consolidado
-
-### 10.7 Proposta consolidada
-
-A proposta consolidada deve conter:
-
-- dados do cliente
-- origem
-- destino
-- lista de itens
-- valor comercial dos itens
-- composição logística recomendada
-- composição logística final escolhida
-- custos logísticos detalhados
-- frete total
-- valor total da proposta
-- versão da proposta
-- histórico de alterações
-
-## 11. Requisitos funcionais
-
-Defina requisitos funcionais completos para, no mínimo:
-
-- importar documentos
-- processar documentos
-- normalizar itens
-- catalogar peças
-- calcular cubagem
-- calcular peso
-- recomendar veículos
-- recalcular composição manual
-- consultar rotas
-- calcular pedágio
-- calcular custo logístico
-- consolidar proposta
-- versionar proposta
-- auditar alterações
-- consultar histórico
-- cadastrar veículos
-- cadastrar capacidades dos veículos
-- cadastrar tipos de carroceria
-- cadastrar restrições de acesso por destino
-- cadastrar tabelas de frete
-- cadastrar restrições por região
-- cadastrar múltiplas transportadoras
-- cadastrar múltiplos CDs/origens
-
-## 12. Requisitos não funcionais
-
-Defina requisitos não funcionais de:
-
-- performance
-- escalabilidade
-- tolerância a falhas
-- idempotência
-- consistência transacional
-- observabilidade
-- auditoria
-- segurança
-- LGPD
-- rastreabilidade
-- versionamento
-- maintainability
-- operabilidade
-
-## 13. Decisão arquitetural
-
-Quero que você escolha entre:
-
-- monolito modular
-- microsserviços
-
-E justifique profundamente.
-
-Minha expectativa é que você avalie:
-
-- estágio do produto
-- complexidade do domínio
-- necessidade de entrega rápida
-- custo operacional
-- necessidade de rastreabilidade
-- volume de integrações
-- probabilidade de crescimento nacional
-
-Se optar por monolito modular, detalhe os módulos.
-Se optar por microsserviços, detalhe bounded contexts, contratos, mensageria e consistência.
-
-## 14. Arquitetura técnica esperada
-
-Sugira arquitetura preparada para produção com:
-
-- Spring Boot
-- PostgreSQL
-- Flyway
-- Docker
-- OpenAPI
-- logs estruturados
-- tracing
-- metrics
-- filas para processamento pesado
-- cache para tabelas e consultas externas
-- retry/circuit breaker para integrações
-
-## 15. Estrutura de módulos e pacotes
-
-Sugira algo como:
-
-```text
-com.empresa.logistica
-├── shared
-├── customer
-├── catalog
-├── document
-├── proposal
-├── freight
-├── routing
-├── vehicle
-├── carrier
-├── pricing
-├── audit
-└── integration
-```
-
-Explique responsabilidades, fronteiras e dependências.
-
-## 16. Modelagem de banco de dados
-
-Quero **um único banco PostgreSQL**, relacional, consolidado.
-
-Não criar dois bancos separados para documentos e logística.
-Não criar modelagens duplicadas.
-Não separar a lógica em bancos concorrentes.
-
-Sugira tabelas para, no mínimo:
-
-- cliente
-- endereco
-- centro_distribuicao
-- documento_importado
-- documento_importado_arquivo
-- lote_importacao
-- item_importado_bruto
-- item_normalizado
-- catalogo_produto
-- sinonimo_produto
+- tratamento de erros
+
+Importante: **não quero frontend**.  
+Importante: **não quero recriação do domínio**.  
+Importante: **não quero invenção de tabelas ou entidades novas se elas já existirem no projeto**.
+
+---
+
+## 1. Contexto obrigatório que você deve usar
+
+Antes de responder, você deve obrigatoriamente ler e considerar:
+
+- `examples/analise.md`
+- todos os diagramas X6 disponíveis no projeto
+- o PDF oficial fornecido pela empresa
+- a estrutura atual do projeto Spring Boot
+- todas as entidades já existentes em `backend/src/main/java/com/fastgondulas/backend/domain`
+- todos os repositories já existentes
+- o controller existente `AutenticacaoUsuarioController`
+- o service existente `UsuarioService`
+- os DTOs existentes `CadastroRequest` e `LoginRequest`
+
+Você deve assumir que o repositório atual já contém o modelo de domínio principal e que ele representa a base oficial do sistema.
+
+---
+
+## 2. Restrições obrigatórias
+
+### Não fazer
+
+- não recriar entidades
+- não recriar tabelas
+- não recriar repositories
+- não modificar o modelo de domínio
+- não propor usar entidades diretamente em controllers
+- não ignorar classes já existentes
+- não responder como se estivesse começando um projeto do zero
+
+### Fazer
+
+- mapear a camada de aplicação sobre o domínio existente
+- consumir as entidades existentes
+- consumir os repositories existentes
+- aproveitar os serviços e controllers já criados como ponto de partida
+- identificar lacunas reais da camada de aplicação
+- propor contratos REST consistentes com o domínio atual
+- propor segurança profissional e stateless
+
+---
+
+## 3. Objetivo principal
+
+Quero que você gere uma especificação técnica extremamente detalhada para implementar o backend usando **o projeto atual como fonte da verdade**.
+
+O resultado deve cobrir:
+
+- todos os controllers que devem existir
+- todas as rotas REST
+- todos os services necessários
+- todos os DTOs de request/response
+- toda a estratégia de autenticação
+- toda a estratégia de autorização
+- toda a configuração JWT
+- toda a configuração Spring Security
+- toda a política de permissões por perfil
+- todas as regras de negócio relevantes por módulo
+- todas as integrações de frete/rota/geolocalização
+
+A especificação deve ser suficiente para implementar a camada de aplicação sem precisar tomar decisões importantes depois.
+
+---
+
+## 4. Escopo da análise
+
+Analise o projeto atual e estruture a camada de aplicação a partir dos módulos/domínios já existentes, especialmente os grupos abaixo:
+
+- autenticação e usuários
+- clientes
+- endereços de entrega
+- ordens de compra
+- itens de ordem de compra
+- catálogo de produtos
+- dimensões e pesos
+- sinônimos e nomenclaturas
+- documentos importados
+- lotes de importação
+- itens importados brutos
+- estimativas
+- itens de estimativa
 - proposta
-- proposta_versao
-- proposta_item
-- simulacao_logistica
-- simulacao_veiculo
-- veiculo_tipo
-- veiculo_capacidade
-- veiculo_regra_operacional
-- transportadora
-- transportadora_regiao
-- tabela_frete
-- faixa_frete
-- parametro_pedagio
-- restricao_regiao
-- rota_consulta
-- custo_logistico
-- auditoria_evento
-
-Também quero:
-
-- exemplos de colunas
-- PKs
-- FKs
-- índices
-- constraints
-- campos de auditoria
-- estratégia de versionamento
-
-## 17. Entidades JPA
-
-Sugira entidades JPA com foco em domínio e não apenas em CRUD.
-
-Inclua exemplos para:
-
-- `DocumentoImportado`
-- `ItemImportadoBruto`
-- `ItemNormalizado`
-- `Proposta`
-- `PropostaVersao`
-- `PropostaItem`
-- `SimulacaoLogistica`
-- `SimulacaoVeiculo`
-- `VeiculoTipo`
-- `VeiculoRegraOperacional`
-- `TabelaFrete`
-- `Transportadora`
-- `RestricaoRegiao`
-
-## 18. DTOs
-
-Sugira DTOs de request/response para:
-
-- upload de documento
-- reprocessamento
-- confirmação de normalização
-- cálculo logístico
-- override manual de veículos
-- recomendação automática de veículos
-- elegibilidade de veículo por rota/destino
-- retorno da proposta consolidada
-- consulta de histórico
-- consulta de simulação
-
-## 19. Endpoints REST
-
-Sugira endpoints REST versionados para:
-
-- importação de documentos
-- processamento
-- catálogo
-- propostas
-- simulações logísticas
-- veículos
-- elegibilidade logística
-- transportadoras
-- tabelas de frete
-- restrições
+- proposta versão
+- proposta item
+- simulação logística
+- simulação de veículo
+- veículo tipo
+- regras operacionais de veículo
+- restrições por região
+- restrições de destino
+- fator de ajuste
+- fator de montagem
+- frete
+- faixa de frete
+- custo logístico
 - auditoria
+- transportadoras
 
-Inclua verbos, payloads, filtros, paginação e endpoints de recálculo.
+Se algum desses domínios já estiver materializado em classes no projeto, você deve partir dele.
 
-## 20. Bibliotecas Java recomendadas
+---
 
-Quero recomendações reais e justificadas para:
+## 5. Controllers
 
-- leitura de PDF
-- leitura de Excel
-- OCR, se necessário
-- parser tabular
-- geração de PDF
-- integração HTTP
-- retry/circuit breaker
-- cache
-- mensageria
-- testes
+Mapeie todos os controllers que devem existir com base nas entidades e casos de uso reais do projeto.
+
+Para cada controller, informe:
+
+### Nome do controller
 
 Exemplos esperados:
 
-- Apache PDFBox
-- Tabula
-- Apache POI
-- OpenPDF ou iText
-- Spring Retry
-- Resilience4j
-- OpenFeign ou WebClient
+- `AutenticacaoController`
+- `UsuarioController`
+- `ClienteController`
+- `OrdemCompraController`
+- `CatalogoProdutoController`
+- `DocumentoImportadoController`
+- `EstimativaController`
+- `PropostaController`
+- `SimulacaoLogisticaController`
+- `VeiculoController`
+- `TransportadoraController`
+- `ParametroFreteController`
+- `AuditoriaController`
 
-Mas quero análise crítica, não só lista.
+### Para cada rota, informe obrigatoriamente
 
-## 21. APIs externas reais sugeridas
+- endpoint completo
+- verbo HTTP
+- objetivo da rota
+- request DTO
+- response DTO
+- query params e paginação quando aplicável
+- regras de validação
+- regras de negócio
+- perfis autorizados
+- service utilizado
+- possíveis respostas de erro
 
-Sugira APIs reais, com prós e contras, para:
+### Erros que devem ser mapeados por rota
 
-- rotas
-- mapas
-- distância
-- geocoding
-- pedágios
-- custo logístico ou frete
+- `400 Bad Request`
+- `401 Unauthorized`
+- `403 Forbidden`
+- `404 Not Found`
+- `409 Conflict`
+- `422 Unprocessable Entity`
+- `500 Internal Server Error`
 
-Pode incluir exemplos como:
+---
 
-- Google Maps Platform
-- Mapbox
-- HERE
+## 6. Services
+
+Para cada agregado ou módulo do domínio existente, defina o respectivo service da camada de aplicação.
+
+Para cada service, descreva:
+
+- responsabilidade
+- casos de uso atendidos
+- métodos públicos
+- validações
+- regras de negócio
+- dependências
+- repositories utilizados
+- outros services utilizados
+- integrações externas utilizadas
+- eventos/auditoria gerados
+
+### Exemplos de métodos esperados
+
+- `criar()`
+- `atualizar()`
+- `buscarPorId()`
+- `buscarPorUuid()`
+- `listar()`
+- `listarPaginado()`
+- `processarDocumento()`
+- `normalizarItens()`
+- `calcularEstimativa()`
+- `simularFrete()`
+- `recalcularComposicaoVeiculos()`
+- `aprovarProposta()`
+- `alterarStatus()`
+- `buscarHistorico()`
+- `registrarEventoAuditoria()`
+- `login()`
+- `refreshToken()`
+- `logout()`
+
+---
+
+## 7. DTOs
+
+Defina todos os DTOs necessários.
+
+Regra obrigatória:
+
+- controllers nunca devem expor entidades JPA diretamente
+- requests e responses devem ser separados
+- DTOs devem refletir os fluxos reais do sistema
+- DTOs existentes (`CadastroRequest`, `LoginRequest`) devem ser considerados e refinados se necessário
+
+### Organize os DTOs por categoria
+
+#### Auth
+
+- `LoginRequest`
+- `CadastroRequest`
+- `TokenResponse`
+- `RefreshTokenRequest`
+- `UsuarioAutenticadoResponse`
+
+#### Usuário e acesso
+
+- `UsuarioResponse`
+- `AtualizarUsuarioRequest`
+- `AlterarSenhaRequest`
+- `PerfilResponse`
+
+#### Cliente
+
+- `CreateClienteRequest`
+- `UpdateClienteRequest`
+- `ClienteResponse`
+- `ClienteResumoResponse`
+
+#### Endereço
+
+- `CreateEnderecoEntregaRequest`
+- `UpdateEnderecoEntregaRequest`
+- `EnderecoEntregaResponse`
+
+#### Ordem de compra
+
+- `CreateOrdemCompraRequest`
+- `UpdateOrdemCompraRequest`
+- `OrdemCompraResponse`
+- `ItemOrdemCompraRequest`
+- `ItemOrdemCompraResponse`
+
+#### Catálogo
+
+- `ProdutoResponse`
+- `ProdutoResumoResponse`
+- `ProdutoDimensaoResponse`
+- `ProdutoPesoResponse`
+- `NomenclaturaMappingResponse`
+- `ProdutoSinonimoResponse`
+
+#### Documento e importação
+
+- `UploadDocumentoRequest`
+- `DocumentoImportadoResponse`
+- `ProcessarDocumentoRequest`
+- `ItemImportadoBrutoResponse`
+- `LoteImportacaoResponse`
+
+#### Estimativa e frete
+
+- `CalcularEstimativaRequest`
+- `EstimativaResponse`
+- `EstimativaItemResponse`
+- `CalcularFreteRequest`
+- `FreteSimuladoResponse`
+- `HistoricoFreteResponse`
+
+#### Proposta e simulação logística
+
+- `CreatePropostaRequest`
+- `PropostaResponse`
+- `PropostaVersaoResponse`
+- `SimulacaoLogisticaRequest`
+- `SimulacaoLogisticaResponse`
+- `SimulacaoVeiculoResponse`
+- `OverrideComposicaoVeiculosRequest`
+
+#### Veículos e regras operacionais
+
+- `VeiculoTipoResponse`
+- `VeiculoRegraOperacionalResponse`
+- `RestricaoDestinoResponse`
+- `RestricaoRegiaoResponse`
+- `TabelaFreteResponse`
+- `FaixaFreteResponse`
+
+#### Auditoria e erro
+
+- `EventoAuditoriaResponse`
+- `ErroResponse`
+- `ValidacaoErroResponse`
+
+### Para cada DTO, informe
+
+- finalidade
+- campos
+- tipo de cada campo
+- obrigatoriedade
+- validações Bean Validation
+- exemplo JSON
+- em quais rotas usar
+
+### Bean Validation esperada
+
+Use e detalhe quando aplicar:
+
+- `@NotNull`
+- `@NotBlank`
+- `@Size`
+- `@Email`
+- `@Pattern`
+- `@Positive`
+- `@PositiveOrZero`
+- `@PastOrPresent`
+- `@FutureOrPresent`
+- `@Valid`
+
+---
+
+## 8. Segurança - prioridade máxima
+
+Projete a camada de segurança inteira com Spring Security profissional.
+
+### Regras obrigatórias
+
+- sistema stateless
+- não usar sessão HTTP
+- autenticação via JWT
+- refresh token
+- logout seguro
+- revogação de token
+- expiração configurável
+- claims customizadas
+- password hashing com BCrypt
+- filtros de autenticação
+- tratamento centralizado de erro de segurança
+
+### JWT
+
+Defina:
+
+- access token
+- refresh token
+- duração de cada token
+- estratégia de renovação
+- rotação de refresh token
+- blacklist ou estratégia de revogação
+- onde persistir refresh token se necessário
+- claims obrigatórias
+
+### Claims mínimas
+
+- `userId`
+- `email`
+- `role`
+- `permissions`
+- `issuedAt`
+- `expiration`
+
+### Roles obrigatórias
+
+- `ROLE_ADMIN`
+- `ROLE_OPERADOR`
+- `ROLE_CLIENTE`
+- `ROLE_MOTORISTA`
+
+### Você deve mapear
+
+- quais endpoints cada role pode acessar
+- quais endpoints exigem autenticação
+- quais endpoints são públicos
+- quais endpoints exigem permissão fina
+- quais operações exigem `ADMIN`
+
+Crie uma tabela completa de autorização por endpoint.
+
+---
+
+## 9. SecurityConfig
+
+Defina como deve ficar a configuração com Spring Security.
+
+Explique detalhadamente:
+
+- `SecurityFilterChain`
+- `AuthenticationManager`
+- `PasswordEncoder` com BCrypt
+- filtro JWT
+- provider de autenticação
+- `UserDetailsService` ou adaptação equivalente
+- `CorsConfiguration`
+- `AuthenticationEntryPoint`
+- `AccessDeniedHandler`
+- política stateless
+- rotas públicas
+- rotas protegidas
+- política de autorização por role/permissão
+
+---
+
+## 10. Migração da autenticação atual
+
+Hoje o projeto possui autenticação simples baseada no `AutenticacaoUsuarioController` e no `UsuarioService`.
+
+Você deve:
+
+- analisar o modelo atual
+- apontar limitações técnicas
+- propor migração segura para JWT
+- preservar compatibilidade evolutiva
+- definir etapas de migração
+
+### Compare obrigatoriamente duas opções
+
+#### Opção 1
+
+Spring Security + JWT próprio
+
+#### Opção 2
+
+Firebase Authentication + Firebase Admin SDK
+
+Para cada opção, explique:
+
+- vantagens
+- desvantagens
+- impacto na arquitetura
+- impacto em custo
+- impacto em complexidade
+- impacto na operação
+- aderência ao projeto atual
+
+No final, escolha a melhor opção para este projeto e justifique tecnicamente.
+
+---
+
+## 11. Frete e integrações externas
+
+Defina controllers, services e DTOs para cálculo e simulação de frete.
+
+### Rotas mínimas esperadas
+
+- `POST /api/v1/fretes/calcular`
+- `POST /api/v1/fretes/simular`
+- `GET /api/v1/fretes/historico`
+- `GET /api/v1/fretes/{id}`
+
+### Integrar preferencialmente com soluções gratuitas ou de baixo custo
+
 - OpenRouteService
-- TollGuru
-- Freight APIs específicas
+- OSRM
+- Nominatim
+- ViaCEP
 
-Quero que você avalie:
+### Para cada integração, informe
 
-- custo
-- cobertura Brasil
-- precisão
-- facilidade de integração Java
-- limites
-- risco de lock-in
-
-## 22. Estratégias matemáticas e algoritmos
-
-Quero exemplos de:
-
-- fórmulas
-- cálculos
-- pseudoalgoritmos
-- heurísticas
-
-Detalhe como implementar:
-
-### 22.1 Cubagem
-- cálculo por item
-- cálculo total
-- fator de ocupação
-
-### 22.2 Ocupação por veículo
-- percentual de volume ocupado
-- percentual de peso ocupado
-- restrição por dimensão crítica
-- diferença entre capacidade nominal e capacidade operacional
-
-### 22.3 Recomendação de veículos
-
-Explique estratégias como:
-
-- first fit decreasing
-- best fit decreasing
-- heurística por custo mínimo
-- heurística por ocupação ótima
-- combinação híbrida peso x volume x comprimento
-- validação de elegibilidade antes do ranking
-- penalização para carreta inviável por restrição urbana
-- penalização para baixa ocupação de carreta
-- preferência por truque quando houver restrição de acesso
-- regras de penalização por subutilização
-- regras de penalização por excesso de fracionamento
-
-### 22.4 Recálculo síncrono
-
-Quando o operador mudar os veículos, explique como recalcular sem perder consistência.
-
-## 23. Regras configuráveis e fórmulas futuras
-
-Sugira como armazenar regras e fórmulas para customização futura, por exemplo:
-
-- tabelas parametrizáveis
-- engine simples orientada a regras
-- versionamento de parâmetros
-- efetividade por data
-- regra por região
-- regra por transportadora
-- regra por tipo de carga
-- regra por tipo de carroceria
-- regra por destino
-- regra por limitação de doca
-
-Não quero solução overengineered.
-Quero algo que comece simples, mas evolua bem.
-
-## 24. Múltiplas transportadoras e múltiplos CDs
-
-Explique como modelar:
-
-- múltiplas transportadoras
-- múltiplos centros de distribuição
-- política de seleção de origem
-- política de seleção de transportadora
-- tabela de frete por região
-- frete mínimo
-- lead time
-- SLA
-- restrições por praça/região
-- aceitação ou não de carreta por destino
-- uso preferencial de truque em áreas urbanas
-
-## 25. Performance e escalabilidade
-
-Sugira estratégias para:
-
-- processamento assíncrono de documentos pesados
-- cache de tabelas de frete
-- cache de rota/pedágio por janela de tempo
-- evitar recalcular proposta inteira desnecessariamente
-- snapshot dos dados usados no cálculo
-- indexação adequada
-- particionamento futuro
-- read models, se fizer sentido
-
-## 26. Auditoria, versionamento e rastreabilidade
-
-Quero estratégia para:
-
-- saber qual arquivo originou cada item
-- saber qual usuário alterou veículos
-- saber por que uma carreta foi descartada da recomendação
-- saber qual versão da proposta foi enviada ao cliente
-- saber quais parâmetros estavam vigentes no momento do cálculo
-- reproduzir cálculo antigo
-- trilha de auditoria completa
-
-## 27. Segurança e robustez
-
-Sugira validações e proteções para:
-
-- upload inválido
-- arquivo corrompido
-- extensão falsa
-- payload grande
-- repetição de processamento
-- concorrência
-- idempotência
-- inconsistência transacional
-- falha em API externa
+- service responsável
+- interface/porta de integração
+- método principal
+- DTOs de integração
 - timeout
-- retry indevido
-- dados incompletos
+- retry
+- circuit breaker
+- cache
+- fallback
+- tratamento de erro
+- estratégia de observabilidade
 
-## 28. Preparação para IA futura
+### Cobrir pelo menos
 
-Desenhe a arquitetura para no futuro suportar:
+- cálculo de distância
+- geocoding
+- busca de CEP
+- cálculo de rota
+- fallback entre provedores
 
-- recomendação logística baseada em histórico
-- otimização de carga
-- previsão de custo
-- sugestão automática de composição de veículos
-- classificação inteligente de itens importados
+---
 
-Sem acoplar IA no core transacional agora.
+## 12. Regras de qualidade arquitetural
 
-## 29. Formato de saída obrigatório
+A resposta deve seguir estas diretrizes:
 
-Sua resposta deve ser organizada exatamente nesta ordem:
+- usar arquitetura limpa e pragmática
+- controller fino
+- service com regra de negócio
+- repository só para persistência
+- DTO para boundary
+- mapper dedicado
+- tratamento global de exceções
+- padronização de resposta de erro
+- logs auditáveis
+- validação forte
+- nomenclatura consistente
+- separação por módulo
+- foco em manutenibilidade
 
-1. Visão executiva do negócio
-2. Diagnóstico arquitetural
-3. Regras de negócio detalhadas
-4. Requisitos funcionais
-5. Requisitos não funcionais
-6. Arquitetura recomendada
-7. Monolito modular vs microsserviços
-8. Fluxo ponta a ponta
-9. Diagramas textuais
-10. Modelagem de banco de dados
-11. Entidades JPA sugeridas
-12. DTOs sugeridos
-13. Endpoints REST
-14. Estratégia de cálculo volumétrico
-15. Estratégia de recomendação de veículos
-16. Estratégia de recálculo síncrono
-17. Integrações externas recomendadas
-18. Bibliotecas Java recomendadas
-19. Padrões de projeto recomendados
-20. Estratégia de auditoria e versionamento
-21. Estratégia de performance e escalabilidade
-22. Estratégia para múltiplas transportadoras e regiões
-23. Estratégia para múltiplos CDs
-24. Estratégia de regras configuráveis
-25. Preparação para IA futura
-26. Riscos críticos do domínio
-27. Roadmap de implementação por fases
+Evite:
 
-## 30. Nível de profundidade esperado
+- controller com regra de negócio
+- DTO genérico demais
+- service monolítico
+- autorização espalhada de forma inconsistente
+- dependência direta de provider externo no domínio
 
-- Não quero resposta genérica.
-- Quero decisões justificadas.
-- Quero exemplos reais.
-- Quero exemplos de entidades.
-- Quero exemplos de tabelas.
-- Quero exemplos de payloads.
-- Quero exemplos de algoritmos.
-- Quero foco em backend enterprise.
-- Quero foco em Java + Spring Boot + PostgreSQL.
-- Quero visão de software nacional escalável.
-- Quero visão de produto que pode crescer para operação multi-filial e multi-transportadora.
+---
 
-## 31. Restrições finais
+## 13. Formato obrigatório da resposta
 
-- Não trate isso como CRUD simples.
-- Não simplifique demais a logística.
-- Não ignore divergência entre PDF e Excel.
-- Não ignore volume, peso e dimensão crítica.
-- Não ignore restrição de carroceria, doca, manobra e acesso urbano.
-- Não ignore regra operacional regional.
-- Não ignore auditoria.
-- Não ignore versionamento.
-- Não ignore rastreabilidade.
-- Não proponha arquitetura fantasiosa sem justificar custo.
-- Priorize solução enterprise, pragmática e implementável.
+A resposta final deve ser estruturada exatamente assim:
+
+# 1. Visão Geral da Camada de Aplicação
+
+- leitura do projeto atual
+- estado atual da camada de aplicação
+- lacunas encontradas
+- direção arquitetural recomendada
+
+# 2. Controllers
+
+## Lista de Controllers
+
+## Rotas por Controller
+
+## Regras de Autorização por Endpoint
+
+# 3. Services
+
+## Lista de Services
+
+## Responsabilidades
+
+## Métodos
+
+## Dependências
+
+# 4. DTOs
+
+## Requests
+
+## Responses
+
+## Regras de Validação
+
+# 5. Segurança
+
+## Diagnóstico da autenticação atual
+
+## Estratégia JWT
+
+## Roles e Permissões
+
+## SecurityConfig
+
+## Fluxo de Login
+
+## Fluxo de Refresh Token
+
+## Fluxo de Logout
+
+# 6. Frete e Integrações
+
+## Endpoints
+
+## Services
+
+## Providers
+
+## Cache, Retry e Fallback
+
+# 7. Regras de Negócio por Módulo
+
+# 8. Tratamento de Erros
+
+# 9. Roadmap de Implementação
+
+Divida o roadmap em:
+
+- imediato
+- curto prazo
+- médio prazo
+
+Cada item deve conter:
+
+- prioridade
+- impacto
+- complexidade
+
+---
+
+## 14. Nível de exigência
+
+- não quero resposta genérica
+- não quero resposta rasa
+- não quero backend inventado fora do projeto
+- quero aderência total ao código atual
+- quero precisão técnica
+- quero foco real em Spring Boot
+- quero foco real em segurança
+- quero foco real em camada de aplicação
+- quero que a especificação seja implementável
+
+---
+
+## 15. Instrução final
+
+Analise o projeto real e produza uma especificação completa da camada de aplicação backend, usando como base o domínio já existente e o material fornecido.
+
+Se houver inconsistências entre documentos e código, você deve apontar explicitamente.
+
+Se houver lacunas no projeto atual, você deve preencher apenas a camada de aplicação, sem recriar o domínio.
