@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.auditoria;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,7 +10,9 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -32,12 +35,15 @@ public class EventoAuditoria {
     @Column(name = "registro_id")
     private Long registroId;
 
+    @JdbcTypeCode(Types.CHAR)
     @Column(name = "operacao", length = 1)
     private String operacao;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "estado_anterior", columnDefinition = "jsonb")
     private String estadoAnterior;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "estado_novo", columnDefinition = "jsonb")
     private String estadoNovo;
 

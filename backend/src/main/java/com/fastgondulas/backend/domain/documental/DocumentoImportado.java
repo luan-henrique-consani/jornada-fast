@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.documental;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,6 +37,7 @@ public class DocumentoImportado {
     private String nomeArquivo;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::documental.tipo_documento")
     @Column(name = "tipo_documento", columnDefinition = "documental.tipo_documento")
     private TipoDocumento tipoDocumento;
 
@@ -52,6 +54,7 @@ public class DocumentoImportado {
     private String hashSha256;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::documental.status_processamento")
     @Column(name = "status", columnDefinition = "documental.status_processamento")
     private StatusProcessamento status;
 

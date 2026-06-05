@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.logistica;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,9 +33,11 @@ public class PropostaVersao {
     private Integer numeroVersao;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::logistica.status_proposta")
     @Column(name = "status", columnDefinition = "logistica.status_proposta")
     private StatusProposta status;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "snapshot_dados", columnDefinition = "jsonb")
     private String snapshotDados;
 

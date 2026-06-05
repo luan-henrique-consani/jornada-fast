@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.catalogo;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,6 +33,7 @@ public class ProdutoCategoria {
     private String codigo;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::catalogo.tipo_linha")
     @Column(name = "linha", columnDefinition = "catalogo.tipo_linha")
     private TipoLinha linha;
 

@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.documental;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,10 +34,12 @@ public class LoteImportacao {
     private String descricao;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::documental.status_processamento")
     @Column(name = "status", columnDefinition = "documental.status_processamento")
     private StatusProcessamento status;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::documental.tipo_documento")
     @Column(name = "origem", columnDefinition = "documental.tipo_documento")
     private TipoDocumento origem;
 

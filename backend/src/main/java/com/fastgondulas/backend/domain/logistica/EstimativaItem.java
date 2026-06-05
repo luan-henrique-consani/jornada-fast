@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.logistica;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -42,6 +43,7 @@ public class EstimativaItem {
     private BigDecimal quantidade;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::logistica.metodo_volumetria")
     @Column(name = "metodo_volumetria", columnDefinition = "logistica.metodo_volumetria")
     private MetodoVolumetria metodoVolumetria;
 
@@ -58,6 +60,7 @@ public class EstimativaItem {
     private BigDecimal fatorMontagemUsado;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::logistica.status_montagem")
     @Column(name = "status_montagem_item", columnDefinition = "logistica.status_montagem")
     private StatusMontagem statusMontagemItem;
 

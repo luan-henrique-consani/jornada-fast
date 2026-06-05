@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.logistica;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +31,7 @@ public class VeiculoTipo {
     private String nome;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::logistica.tipo_veiculo")
     @Column(name = "tipo", columnDefinition = "logistica.tipo_veiculo")
     private TipoVeiculo tipo;
 

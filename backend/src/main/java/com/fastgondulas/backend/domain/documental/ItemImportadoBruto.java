@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.documental;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,9 +37,11 @@ public class ItemImportadoBruto {
     private String abaOrigem;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::documental.status_item")
     @Column(name = "status", columnDefinition = "documental.status_item")
     private StatusItem status;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "conteudo_bruto", columnDefinition = "jsonb")
     private String conteudoBruto;
 

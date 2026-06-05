@@ -7,5 +7,6 @@ import com.fastgondulas.backend.domain.core.Cliente;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    
+
+    java.util.Optional<Cliente> findByNomeIgnoreCase(String nome);
 }

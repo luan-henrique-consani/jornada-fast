@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.logistica;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,6 +41,7 @@ public class SimulacaoLogistica {
     @Column(name = "veiculo_selecionado_id")
     private Long veiculoSelecionadoId;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "snapshot_frete", columnDefinition = "jsonb")
     private String snapshotFrete;
 

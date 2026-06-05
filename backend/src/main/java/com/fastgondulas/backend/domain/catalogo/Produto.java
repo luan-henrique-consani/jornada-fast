@@ -2,6 +2,7 @@ package com.fastgondulas.backend.domain.catalogo;
 
 import com.fastgondulas.backend.domain.logistica.MetodoVolumetria;
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,6 +37,7 @@ public class Produto {
     private Long categoriaId;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::catalogo.tipo_linha")
     @Column(name = "linha", columnDefinition = "catalogo.tipo_linha")
     private TipoLinha linha;
 
@@ -58,6 +60,7 @@ public class Produto {
     private boolean isMontante;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::logistica.metodo_volumetria")
     @Column(name = "metodo_volumetria", columnDefinition = "logistica.metodo_volumetria")
     private MetodoVolumetria metodoVolumetria;
 

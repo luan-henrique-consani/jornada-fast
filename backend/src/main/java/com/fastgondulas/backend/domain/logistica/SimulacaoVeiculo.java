@@ -1,6 +1,7 @@
 package com.fastgondulas.backend.domain.logistica;
 
 import jakarta.persistence.Column;
+import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,6 +37,7 @@ public class SimulacaoVeiculo {
     private boolean elegivel;
 
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::logistica.motivo_descarte")
     @Column(name = "motivo_descarte", columnDefinition = "logistica.motivo_descarte")
     private MotivoDescarte motivoDescarte;
 
