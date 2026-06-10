@@ -1,8 +1,12 @@
 import type { RouteObject } from 'react-router-dom'
-import HomePage from './pages/HomePage'
+import DashboardPage from './pages/DashboardPage'
 
 const dashboardRoutes: RouteObject[] = [
-  { index: true, element: <HomePage /> },
+  {
+    index: true,
+    element: <DashboardPage />,
+    handle: { crumbs: ['Início', 'Dashboard'], sync: 'sync' },
+  },
 ]
 
 export default dashboardRoutes
