@@ -44,6 +44,7 @@ const navGroups: { title: string; items: NavItem[] }[] = [
         label: 'Propostas',
         path: '/propostas',
         icon: <FileText size={18} />,
+        badge: 9,
       },
       {
         label: 'Peças',
@@ -122,11 +123,11 @@ export default function AppSidebar() {
         )}
       >
         <div className="w-8 h-8 bg-accent rounded-md grid place-items-center text-white font-extrabold text-sm flex-shrink-0">
-          FG
+          LF
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <div className="text-white font-bold text-[15px] tracking-tight leading-tight">Fast Gôndulas</div>
+            <div className="text-white font-bold text-[15px] tracking-tight leading-tight">LOGFAST</div>
             <div className="text-[11px] text-slate-400 tracking-widest uppercase">Logística</div>
           </div>
         )}

@@ -12,7 +12,7 @@ export default function Header() {
   return (
     <header style={{ background: '#1e293b', color: '#fff', padding: '0 1.5rem' }}>
       <nav aria-label="Navegação principal" style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', height: '56px' }}>
-        <span style={{ fontWeight: 'bold', marginRight: '1rem', color: '#f8fafc' }}>Fast Gôndulas</span>
+        <span style={{ fontWeight: 'bold', marginRight: '1rem', color: '#f8fafc' }}>LOGFAST</span>
         {NAV_ITEMS.map(({ to, label, end }) => (
           <NavLink
             key={to}

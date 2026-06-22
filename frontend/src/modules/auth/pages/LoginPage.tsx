@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, TrendingUp, Package, Truck } from 'lucide-react'
 import { authService } from '../services/auth.service'
 import { cn } from '@/lib/cn'
@@ -40,10 +40,10 @@ export default function LoginPage() {
 
         <div className="relative flex items-center gap-3">
           <div className="w-10 h-10 bg-accent rounded-lg grid place-items-center text-white font-extrabold text-base">
-            FG
+            LF
           </div>
           <div>
-            <div className="text-white font-bold text-lg tracking-tight">Fast Gôndulas</div>
+            <div className="text-white font-bold text-lg tracking-tight">LOGFAST</div>
             <div className="text-white/60 text-[11px] uppercase tracking-widest">Logística</div>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function LoginPage() {
         </div>
 
         <p className="relative text-white/40 text-xs">
-          © 2026 Fast Gôndulas · Todos os direitos reservados
+          © 2026 LOGFAST · Todos os direitos reservados
         </p>
       </div>
 
@@ -79,8 +79,8 @@ export default function LoginPage() {
       <div className="flex items-center justify-center p-6 bg-[#F8FAFC]">
         <div className="w-full max-w-[400px]">
           <div className="flex lg:hidden items-center gap-2.5 mb-8">
-            <div className="w-8 h-8 bg-accent rounded-md grid place-items-center text-white font-extrabold text-sm">FG</div>
-            <span className="font-bold text-primary text-lg">Fast Gôndulas</span>
+            <div className="w-8 h-8 bg-accent rounded-md grid place-items-center text-white font-extrabold text-sm">LF</div>
+            <span className="font-bold text-primary text-lg">LOGFAST</span>
           </div>
 
           <div className="mb-8">
@@ -149,12 +149,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-[13px] text-tx-3">
-            Não tem uma conta?{' '}
-            <Link to="/register" className="text-accent font-semibold hover:text-accent-hover transition-colors">
-              Cadastre-se
-            </Link>
-          </p>
         </div>
       </div>
     </div>

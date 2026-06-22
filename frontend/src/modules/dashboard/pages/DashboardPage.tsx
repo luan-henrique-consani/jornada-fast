@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useAuthStore } from '@/stores/auth.store'
+import { MOCK_PROPOSTAS } from '@/mocks/propostas'
 
 // ─── KPI CARD ──────────────────────────────────────────────────────────────────
 interface KpiCardProps {
@@ -135,28 +136,27 @@ function DonutChart() {
   )
 }
 
-// ─── RECENT PROPOSALS ─────────────────────────────────────────────────────────
-const recentProposals = [
-  { oc: '58241', cliente: 'Atacadão · Loja 312 SP', date: '17/05 · 14h22', vol: '182,4 m³', status: 'Em análise' as StatusType },
-  { oc: '58240', cliente: 'Carrefour · CD Recife',  date: '17/05 · 13h08', vol: '94,6 m³',  status: 'Aprovada' as StatusType },
-  { oc: '58239', cliente: 'Grupo Mateus · MA',      date: '17/05 · 11h41', vol: '241,8 m³', status: 'Calculada' as StatusType },
-  { oc: '58238', cliente: 'Assaí · Pacajus CE',     date: '17/05 · 10h12', vol: '128,2 m³', status: 'Exportada' as StatusType },
-  { oc: '58237', cliente: 'Tenda · Guarulhos SP',   date: '17/05 · 09h33', vol: '66,9 m³',  status: 'Erro' as StatusType },
-  { oc: '58236', cliente: 'Coop · Santo André SP',  date: '16/05 · 18h05', vol: '203,1 m³', status: 'Aprovada' as StatusType },
-  { oc: '58235', cliente: 'BIG · Curitiba PR',      date: '16/05 · 16h28', vol: '147,2 m³', status: 'Aprovada' as StatusType },
-]
+// ─── DADOS DAS PROPOSTAS MOCK ─────────────────────────────────────────────────
+const recentProposals = MOCK_PROPOSTAS.slice(0, 7).map((p) => ({
+  oc: p.oc,
+  id: p.id,
+  cliente: p.cliente,
+  date: p.data,
+  vol: p.volume,
+  status: p.status as StatusType,
+}))
 
 const pendingReviews = [
-  { initials: 'AT', name: 'OC 58241 · Atacadão',   desc: 'Margem 22% · ocupação 96%',    time: '14h22' },
-  { initials: 'CR', name: 'OC 58232 · Cencosud',    desc: "Container 40' alternativo",     time: '12h04' },
-  { initials: 'SP', name: 'OC 58229 · Supermarket', desc: '3 itens sem Qtd/m³',           time: '09h41' },
+  { initials: 'BP', name: 'OC-2025-00847 · Bom Preço', desc: 'Gôndolas + Checkouts · 33,23 m³', time: '14h08' },
+  { initials: 'AT', name: 'OC-2025-00841 · Atacadão',  desc: 'Margem 18% · ocupação 87%',        time: '14h22' },
+  { initials: 'CE', name: 'OC-2025-00815 · Cencosud',  desc: 'Carreta extendida · 12,42 m',      time: '15h50' },
 ]
 
 const topCategories = [
-  { name: 'Porta Pallets', vol: '2.140 m³', pct: 88, colorCls: 'bg-accent' },
-  { name: 'Linha Fria',    vol: '1.820 m³', pct: 74, colorCls: 'bg-danger' },
-  { name: 'LSG (Gôndolas)',vol: '1.605 m³', pct: 66, colorCls: 'bg-primary-light' },
-  { name: 'Checkouts',     vol: '912 m³',   pct: 38, colorCls: 'bg-success' },
+  { name: 'LSG (Gôndolas)', vol: '1.940 m³', pct: 88, colorCls: 'bg-primary-light' },
+  { name: 'Checkouts',      vol: '1.420 m³', pct: 65, colorCls: 'bg-accent' },
+  { name: 'Mobílias',       vol: '980 m³',   pct: 45, colorCls: 'bg-success' },
+  { name: 'Porta Pallets',  vol: '620 m³',   pct: 28, colorCls: 'bg-warning' },
 ]
 
 // ─── PAGE ─────────────────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ export default function DashboardPage() {
       <div className="flex items-end justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-tx">Bom dia, {firstName}</h1>
-          <p className="text-tx-3 text-[13.5px] mt-0.5">Resumo da operação · Segunda, 17 de maio · 2026</p>
+          <p className="text-tx-3 text-[13.5px] mt-0.5">Resumo da operação · Quarta, 18 de junho · 2026</p>
         </div>
         <div className="flex items-center gap-2.5">
           <button className="px-3.5 py-2 rounded-md border border-border text-tx-2 text-[13.5px] font-semibold bg-white hover:bg-surface-2 transition-colors">
@@ -203,8 +203,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         {[
           { icon: <Upload size={16} />, title: 'Subir OC em PDF/Excel', sub: 'Extração automática · 30s', to: '/upload' },
-          { icon: <RefreshCw size={16} />, title: 'Reabrir última proposta', sub: 'OC #58241 · Cliente Atacadão · 14h22', to: '/propostas/58241' },
-          { icon: <LayoutGrid size={16} />, title: 'Ver fila de aprovação', sub: '3 propostas aguardando · Maria T.', to: '/propostas?status=pendente' },
+          { icon: <RefreshCw size={16} />, title: 'Reabrir última proposta', sub: 'OC-2025-00847 · Bom Preço · 14h08', to: '/propostas/oc-2025-00847' },
+          { icon: <LayoutGrid size={16} />, title: 'Ver todas as propostas', sub: '9 propostas este mês · 4 aprovadas', to: '/propostas' },
         ].map((qa) => (
           <Link key={qa.title} to={qa.to}
             className="flex flex-col gap-1.5 p-3.5 border border-dashed border-border-strong rounded-md bg-white hover:border-accent hover:bg-accent-50 transition-all cursor-pointer"
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                     <td className="px-3.5 py-3 font-mono text-right text-tx">{row.vol}</td>
                     <td className="px-3.5 py-3"><StatusBadge status={row.status} /></td>
                     <td className="px-3.5 py-3 text-right">
-                      <a href="#" className="text-tx-3 font-semibold text-[12.5px] hover:text-primary transition-colors">Abrir →</a>
+                      <Link to={`/propostas/${row.id}`} className="text-tx-3 font-semibold text-[12.5px] hover:text-primary transition-colors">Abrir →</Link>
                     </td>
                   </tr>
                 ))}

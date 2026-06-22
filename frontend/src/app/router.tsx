@@ -6,6 +6,7 @@ import NotFound from './NotFound'
 import authRoutes from '@/modules/auth/routes'
 import dashboardRoutes from '@/modules/dashboard/routes'
 import uploadRoutes from '@/modules/upload/routes'
+import propostasRoutes from '@/modules/propostas/routes'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -29,11 +30,7 @@ const router = createBrowserRouter([
         children: [
           ...dashboardRoutes,
           ...uploadRoutes,
-          {
-            path: 'propostas',
-            element: <Placeholder title="Propostas" />,
-            handle: { crumbs: ['Início', 'Propostas'] },
-          },
+          ...propostasRoutes,
           {
             path: 'pecas',
             element: <Placeholder title="Peças" />,

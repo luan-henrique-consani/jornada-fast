@@ -47,10 +47,10 @@ export default function RegisterPage() {
 
         <div className="relative flex items-center gap-3">
           <div className="w-10 h-10 bg-accent rounded-lg grid place-items-center text-white font-extrabold text-base">
-            FG
+            LF
           </div>
           <div>
-            <div className="text-white font-bold text-lg tracking-tight">Fast Gôndulas</div>
+            <div className="text-white font-bold text-lg tracking-tight">LOGFAST</div>
             <div className="text-white/60 text-[11px] uppercase tracking-widest">Logística</div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function RegisterPage() {
         </div>
 
         <p className="relative text-white/40 text-xs">
-          © 2026 Fast Gôndulas · Todos os direitos reservados
+          © 2026 LOGFAST · Todos os direitos reservados
         </p>
       </div>
 
@@ -86,8 +86,8 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center p-6 bg-[#F8FAFC]">
         <div className="w-full max-w-[400px]">
           <div className="flex lg:hidden items-center gap-2.5 mb-8">
-            <div className="w-8 h-8 bg-accent rounded-md grid place-items-center text-white font-extrabold text-sm">FG</div>
-            <span className="font-bold text-primary text-lg">Fast Gôndulas</span>
+            <div className="w-8 h-8 bg-accent rounded-md grid place-items-center text-white font-extrabold text-sm">LF</div>
+            <span className="font-bold text-primary text-lg">LOGFAST</span>
           </div>
 
           <div className="mb-8">
